@@ -1,0 +1,244 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF9999"
+    tools:context=".BookDetailActivity">
+
+    <LinearLayout
+        android:id="@+id/activity_shelf_panel_all"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/activity_shelf_panel_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="7dp"
+            android:paddingRight="7dp"
+            android:background="#0D0E0F"
+            android:paddingBottom="10dp">
+
+            <ImageButton
+                android:id="@+id/activity_book_download_detail_btn_back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/back_icon"/>
+
+            <TextView
+                android:id="@+id/activity_book_download_detail_txt_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="#ffffff"
+                android:textStyle="bold"
+                android:gravity="center"/>
+
+            <ImageButton
+                android:id="@+id/activity_shelf_btn_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="5dp"
+                android:background="@drawable/menu_inactive"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/activity_book_download_detail_panel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.75">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp">
+                    <ImageView
+                        android:id="@+id/activity_book_download_detail_cover_img"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="10dp"
+                    android:layout_marginRight="25dp"
+                    android:padding="10dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="10dp">
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" >
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginRight="10dp"
+                                    android:gravity="center">
+                                    <TextView
+                                        android:id="@+id/activity_book_download_detail_txt_name"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:singleLine="true"
+                                        android:ellipsize="end"
+                                        android:text="BOOK TITLE"
+                                        android:textSize="22dp"
+                                        android:textColor="#605f5f"
+                                        android:textStyle="bold"/>
+                                </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="3dp"
+                                    android:orientation="horizontal"	>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="SHARE : "
+                                        android:textColor="#000"
+                                        android:textSize="18sp"
+                                        android:paddingRight="5dp"/>
+                                    <ImageButton
+                                        android:id="@+id/btn_facebook"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@drawable/facebook"
+                                        android:layout_marginRight="10dp"  />
+                                    <ImageButton
+                                        android:id="@+id/btn_twitter"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@drawable/twitter"
+                                        android:layout_marginRight="10dp"/>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:layout_marginRight="10dp"
+                            android:gravity="center">
+                            <ImageButton
+                                android:id="@+id/activity_book_download_detail_btn_download"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/add_shelf_tablet_icon"/>
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:background="#FFFFFF"
+                        android:orientation="vertical"
+                        android:padding="10dp" >
+
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bt_text_scroll_up"
+                            android:layout_gravity="right"/>
+                        <ScrollView
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1">
+                            <TextView
+                                android:id="@+id/activity_book_download_detail_txt_desc"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:scrollHorizontally="false"
+                                android:text="BOOK DESC"
+                                android:textSize="16dp"
+                                android:textColor="#aaa"
+                                android:textStyle="bold"/>
+                        </ScrollView>
+                        <ImageButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bt_text_scroll_down"
+                            android:layout_gravity="right"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:padding="3dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/activity_shelf_panel_footer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="14dp"
+            android:paddingBottom="8dp"
+            android:background="#0D0E0F"  >
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_gravity="bottom|center_horizontal" >
+                <ImageButton
+                    android:id="@+id/download_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/activity_horizontal_margin"
+                    android:background="@drawable/download_tablet_inactive"/>
+
+
+                <ImageButton
+                    android:id="@+id/myshelf_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:background="@drawable/myshelf_tablet_inactive"/>
+            </LinearLayout>
+
+
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

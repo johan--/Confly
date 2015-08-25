@@ -4,7 +4,8 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ConflyActivity">
+    tools:context=".ConflyActivity"
+    android:id="@+id/">
     <LinearLayout
         android:id="@+id/activity_shelf_panel_all"
         android:layout_width="match_parent"
@@ -152,7 +153,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/download_inactive"/>
+                    android:background="@drawable/download_tablet_inactive"/>
 
 
                 <ImageButton
@@ -160,7 +161,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/myshelf_inactive"/>
+                    android:background="@drawable/myshelf_tablet_inactive"/>
             </LinearLayout>
 
 

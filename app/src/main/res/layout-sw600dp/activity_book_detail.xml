@@ -112,6 +112,7 @@
                     android:layout_height="wrap_content"
                     android:padding="8dp"
                     android:background="#d6dacf">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -226,7 +227,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/download_inactive"/>
+                    android:background="@drawable/download_tablet_inactive"/>
 
 
                 <ImageButton
@@ -234,7 +235,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/myshelf_inactive"/>
+                    android:background="@drawable/myshelf_tablet_inactive"/>
             </LinearLayout>
 
 
