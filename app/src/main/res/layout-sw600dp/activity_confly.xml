@@ -63,8 +63,8 @@
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"/>
             </LinearLayout>
-
     </RelativeLayout>
+
         <RelativeLayout
             android:id="@+id/activity_shelf_panel_header1"
             android:layout_width="match_parent"
