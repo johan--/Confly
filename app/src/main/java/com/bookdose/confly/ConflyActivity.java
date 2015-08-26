@@ -1,5 +1,6 @@
 package com.bookdose.confly;
 
+import android.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -11,6 +12,7 @@ public class ConflyActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_confly);
+        pushDownloadFragment();
     }
 
     @Override
@@ -33,5 +35,17 @@ public class ConflyActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void pushDownloadFragment(){
+        FragmentManager fragmentManager = getFragmentManager();
+        DownloadFragment downloadFragment = DownloadFragment.newInstance("","");
+        fragmentManager.beginTransaction()
+                .replace(R.id.contentPanel,downloadFragment)
+                .commit();
+    }
+
+    void pushLibraryFragment(){
+
     }
 }
