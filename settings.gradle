@@ -1,1 +1,1 @@
-include ':app', ':universalImageLoaderlibrary', ':gridViewPager'
+include ':app', ':universalImageLoaderlibrary', ':gridViewPager', ':facebook'

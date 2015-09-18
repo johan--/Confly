@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -22,6 +24,13 @@ import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.share.Sharer;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,6 +44,9 @@ public class BookDetailActivity extends Activity {
     // declare the dialog as a member field of your activity
     ProgressDialog mProgressDialog;
     Issue issue;
+
+    CallbackManager callbackManager;
+    ShareDialog shareDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +94,7 @@ public class BookDetailActivity extends Activity {
         facebookBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                shareWithFaceBook();
             }
         });
 
@@ -101,6 +113,27 @@ public class BookDetailActivity extends Activity {
             bookDetail.setText(issue.description);
             new DownloadImageTask(coverView).execute(issue.getLargeCoverUrl());
         }
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
+        shareDialog = new ShareDialog(this);
+        // this part is optional
+        shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+
+            }
+
+            @Override
+            public void onSuccess(Sharer.Result result) {
+
+            }
+        });
     }
 
     @Override
@@ -279,5 +312,86 @@ public class BookDetailActivity extends Activity {
                 downloadTask.cancel(true);
             }
         });
+    }
+
+    void shareWithFaceBook(){
+        try {
+
+//            Bitmap image = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+//            SharePhoto photo = new SharePhoto.Builder()
+//                    .setBitmap(image)
+//                    .setCaption("Give me my codez or I will ... you know, do that thing you don't like!")
+//                    .build();
+//
+//            SharePhotoContent content = new SharePhotoContent.Builder()
+//                    .addPhoto(photo)
+//                    .build();
+//
+//            ShareApi.share(content, null);
+
+
+//            ShareLinkContent content = new ShareLinkContent.Builder()
+//                    .setContentUrl(Uri.parse("https://developers.facebook.com"))
+//                    .build();
+
+
+//            final File coverFile = new File(issue.getCoverUrl());
+//            final FileOutputStream fOut = new FileOutputStream(coverFile);
+//            //bm.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+//            fOut.flush();
+//            fOut.close();
+//
+//            String urlToShare = Constant.MAIN_URL+"/book-detail/";
+//            String urlfacebook = urlToShare+issue.content_aid;
+//            Intent intentfacebook = new Intent(android.content.Intent.ACTION_SEND);
+////						intentfacebook.setType("text/plain");
+////						intentfacebook.setType("*/*");
+//
+////						intentfacebook.putExtra(android.content.Intent.EXTRA_TEXT, "PTTEP E-Llibrary |" );
+//
+//
+//            intentfacebook.setType("image/*");
+////					    intentfacebook.putExtra(android.content.Intent.EXTRA_SUBJECT,"PTTEP E-Llibrary |");
+//            intentfacebook.putExtra(android.content.Intent.EXTRA_STREAM, Uri.parse("file://" + coverFile.getAbsolutePath()));
+//
+//
+//
+//
+//            boolean facebookAppFound = false;
+//            List<ResolveInfo> matches = getPackageManager().queryIntentActivities(intentfacebook, 0);
+//            for (ResolveInfo info : matches) {
+//                if (info.activityInfo.packageName.toLowerCase().startsWith("com.facebook")) {
+//                    intentfacebook.setPackage(info.activityInfo.packageName);
+//                    facebookAppFound = true;
+//                    break;
+//                }
+//            }
+//            //If facebook app not found, load sharer.php in a browser
+//            if (!facebookAppFound) {
+//                String sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=" + issue.cover_image;
+//                intentfacebook = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
+//            }
+//            startActivity(intentfacebook);
+
+            if (shareDialog.canShow(ShareLinkContent.class)) {
+                ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                        .setContentTitle("Hello Facebook")
+                        .setContentDescription(
+                                "The 'Hello Facebook' sample  showcases simple Facebook integration")
+                        .setContentUrl(Uri.parse("http://developers.facebook.com/android"))
+                        .build();
+
+                shareDialog.show(linkContent);
+            }
+
+        }catch (Exception e) {
+            System.out.println("ShelfActiviy - createBookDownloadItemPanel "+e.toString());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 }

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Confly.iml" filepath="$PROJECT_DIR$/Confly.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/facebook/facebook.iml" filepath="$PROJECT_DIR$/facebook/facebook.iml" />
       <module fileurl="file://$PROJECT_DIR$/gridViewPager/gridViewPager.iml" filepath="$PROJECT_DIR$/gridViewPager/gridViewPager.iml" />
       <module fileurl="file://$PROJECT_DIR$/universalImageLoaderlibrary/universalImageLoaderlibrary.iml" filepath="$PROJECT_DIR$/universalImageLoaderlibrary/universalImageLoaderlibrary.iml" />
     </modules>

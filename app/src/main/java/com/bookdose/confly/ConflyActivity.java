@@ -65,6 +65,14 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
+        ImageButton menuBt = (ImageButton)findViewById(R.id.activity_btn_menu);
+        menuBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMenuiew();
+            }
+        });
+
         downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_inactive));
 
         downloadMenu.setOnClickListener(new View.OnClickListener() {
@@ -135,6 +143,11 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             categorylistAdapter.setCategoryListListener(this);
             listView.setAdapter(categorylistAdapter);
         }
+    }
+
+    void showMenuiew(){
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 
     void pushDownloadFragment(){
