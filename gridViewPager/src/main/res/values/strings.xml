@@ -1,0 +1,8 @@
+<resources>
+
+    <string name="app_name">GridViewDemo</string>
+
+    <integer name="num_cols">5</integer>
+    <integer name="num_rows">3</integer>
+
+</resources>

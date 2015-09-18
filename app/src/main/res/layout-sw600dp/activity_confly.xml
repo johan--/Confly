@@ -4,8 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ConflyActivity"
-    android:id="@+id/">
+    tools:context=".ConflyActivity">
     <LinearLayout
         android:id="@+id/activity_shelf_panel_all"
         android:layout_width="match_parent"
@@ -117,12 +116,17 @@
             android:layout_weight="1"
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
-            <android.support.v4.view.ViewPager
-                android:id="@+id/activity_shelf_pager_shelf"
+            <!--<android.support.v4.view.ViewPager-->
+                <!--android:id="@+id/activity_shelf_pager_shelf"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:paddingTop="10dp"/>-->
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="10dp"/>
+                android:id="@+id/contentPanel">
 
+            </FrameLayout>
             <LinearLayout
                 android:id="@+id/activity_shelf_panel_page_control_shelf"
                 android:layout_width="match_parent"

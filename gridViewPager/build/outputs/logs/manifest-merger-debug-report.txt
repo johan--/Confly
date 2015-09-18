@@ -1,0 +1,54 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:1:1-26:12
+	package
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:2:5-36
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+	android:versionName
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:4:5-30
+	android:versionCode
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:3:5-28
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:1:11-69
+uses-sdk
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:6:5-8:41
+MERGED from [Confly:universalImageLoaderlibrary:unspecified] /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/build/intermediates/exploded-aar/Confly/universalImageLoaderlibrary/unspecified/AndroidManifest.xml:7:5-9:41
+	android:targetSdkVersion
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:8:9-38
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:7:9-35
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+		INJECTED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml
+uses-permission#android.permission.READ_EXTERNAL_STORAGE
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:10:5-80
+	android:name
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:10:22-77
+application
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:12:5-24:19
+	android:label
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:15:9-41
+	android:allowBackup
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:13:9-35
+	android:icon
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:14:9-45
+	android:theme
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:16:9-40
+activity#com.demo.gridviewdemo.MainActivity
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:17:9-23:20
+	android:name
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:17:19-68
+intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:18:13-22:29
+action#android.intent.action.MAIN
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:19:17-69
+	android:name
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:19:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:21:17-77
+	android:name
+		ADDED from /Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/AndroidManifest.xml:21:27-74

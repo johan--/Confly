@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF9999"
+    android:background="@drawable/bg_shelf_bookprofile"
     tools:context=".BookDetailActivity">
 
     <LinearLayout
@@ -20,14 +20,15 @@
             android:background="#0D0E0F">
 
             <ImageButton
-                android:id="@+id/activity_book_download_detail_btn_back"
+                android:id="@+id/backImage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_gravity="center"
                 android:background="@drawable/back_icon"/>
 
             <TextView
-                android:id="@+id/activity_book_download_detail_txt_title"
+                android:id="@+id/bookTitleHeader"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -58,20 +59,23 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:paddingLeft="5dp"
-            android:paddingRight="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:paddingTop="5dp"
             android:paddingBottom="5dp"  >
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:padding="8dp"
                 android:layout_marginRight="10dp"
-                android:gravity="center">
+                android:gravity="center"
+                >
                 <ImageView
-                    android:id="@+id/activity_book_download_detail_cover_img"
+                    android:id="@+id/coverImage"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/no_image_detail" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="0dp"
@@ -80,16 +84,12 @@
                 android:layout_marginRight="10dp"
                 android:gravity="center">
                 <ImageButton
-                    android:id="@+id/activity_book_download_detail_btn_download"
+                    android:id="@+id/downloadBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/add_shelf_icon"/>
             </LinearLayout>
         </LinearLayout>
-
-
-
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -118,7 +118,7 @@
                         android:paddingTop="3dp"    >
 
                         <TextView
-                            android:id="@+id/activity_book_download_detail_txt_name"
+                            android:id="@+id/bookTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:singleLine="true"
@@ -184,14 +184,14 @@
                             android:layout_height="0dp"
                             android:layout_weight="1">
                             <TextView
-                                android:id="@+id/activity_book_download_detail_txt_desc"
+                                android:id="@+id/detailText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:scrollHorizontally="false"
                                 android:text="BOOK DESC"
                                 android:textSize="18dp"
                                 android:textColor="#aaa"
-                                android:textStyle="bold"
+                                android:textStyle="normal"
                                 android:layout_marginBottom="25dp"/>
                         </ScrollView>
                         <ImageButton
@@ -207,39 +207,6 @@
             </LinearLayout>
 
         </LinearLayout>
-
-        <FrameLayout
-            android:id="@+id/activity_shelf_panel_footer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="14dp"
-            android:paddingBottom="8dp"
-            android:background="#0D0E0F"  >
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_gravity="bottom|center_horizontal" >
-                <ImageButton
-                    android:id="@+id/download_menu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/download_inactive"/>
-
-
-                <ImageButton
-                    android:id="@+id/myshelf_menu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/myshelf_inactive"/>
-            </LinearLayout>
-
-
-
-        </FrameLayout>
 
     </LinearLayout>
 </RelativeLayout>

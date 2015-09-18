@@ -4,77 +4,120 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bookdose.confly.R;
 import com.bookdose.confly.object.Issue;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Teebio on 8/25/15 AD.
  */
-public class DownloadAdapter extends BaseAdapter {
+//public class DownloadAdapter extends ArrayAdapter<Issue> {
+//
+//    private Context context;
+//    private ArrayList<Issue> issues;
+//
+//    public DownloadAdapter(Context context,ArrayList<Issue> issues){
+//        this.context = context;
+//        this.issues = issues;
+//    }
+//
+//    @Override
+//    public int getCount() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public Object getItem(int position) {
+//        return 0;
+//    }
+//
+//    @Override
+//    public long getItemId(int position) {
+//        return 0;
+//    }
+//
+//    @Override
+//    public View getView(int position, View convertView, ViewGroup parent) {
+//        PlaceHolder placeHolder = null;
+//        if (convertView == null){
+//            LayoutInflater inflater = (LayoutInflater) context
+//                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//            convertView = inflater.inflate(R.layout.list_issue_item, parent, false);
+//            placeHolder = new PlaceHolder();
+//            TextView bookName = (TextView) convertView.findViewById(R.id.booknameText);
+//            TextView bookDetail = (TextView) convertView.findViewById(R.id.detailText);
+//            ImageView coverImage = (ImageView) convertView.findViewById(R.id.coverImage);
+//
+//    }
+//
+//    @Override
+//    public int getItemViewType(int position) {
+//        return 0;
+//    }
+//
+//    @Override
+//    public int getViewTypeCount() {
+//        return 0;
+//    }
+//
+//    @Override
+//    public boolean isEmpty() {
+//        return false;
+//    }
+//
 
-    private Context context;
-    private ArrayList<Issue> issues;
+//}
 
-    public DownloadAdapter(Context context,ArrayList<Issue> issues){
-        this.context = context;
-        this.issues = issues;
+public class DownloadAdapter extends ArrayAdapter<Issue> {
+
+    public DownloadAdapter(Context context, int textViewResourceId) {
+        super(context, textViewResourceId);
     }
 
-    @Override
-    public int getCount() {
-        return issues.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return issues.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
+    public DownloadAdapter(Context context, int resource, List<Issue> items) {
+        super(context, resource, items);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
+        View v = convertView;
         PlaceHolder placeHolder = null;
-        if (convertView == null){
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.list_issue_item, parent, false);
+
+        if (v == null) {
+            LayoutInflater vi;
+            vi = LayoutInflater.from(getContext());
+            v = vi.inflate(R.layout.list_issue_item, null);
             placeHolder = new PlaceHolder();
-            placeHolder.bookName = (TextView) convertView.findViewById(R.id.booknameText);
-            placeHolder.bookDetail = (TextView) convertView.findViewById(R.id.detailText);
-            placeHolder.coverImage = (ImageView) convertView.findViewById(R.id.coverImage);
 
-            Issue issue = issues.get(position);
-            placeHolder.bookName.setText(issue.issueName);
-            convertView.setTag(placeHolder);
+            placeHolder.bookName = (TextView) v.findViewById(R.id.booknameText);
+            placeHolder.bookDetail = (TextView) v.findViewById(R.id.detailText);
+            placeHolder.coverImage = (ImageView) v.findViewById(R.id.coverImage);
+
+            v.setTag(placeHolder);
+
         }else {
-            placeHolder = (PlaceHolder)convertView.getTag();
+            placeHolder = (PlaceHolder)v.getTag();
         }
-        return convertView;
-    }
 
-    @Override
-    public int getItemViewType(int position) {
-        return 0;
-    }
+        Issue issue = getItem(position);
 
-    @Override
-    public int getViewTypeCount() {
-        return 0;
-    }
+        if (issue != null) {
+            placeHolder.bookName.setText(issue.content_name);
+            placeHolder.bookDetail.setText(issue.description);
+            ImageLoader imageLoader = ImageLoader.getInstance(); // Get singleton instance
+            imageLoader.init(ImageLoaderConfiguration.createDefault(getContext()));
+            imageLoader.displayImage(issue.getLargeCoverUrl(), placeHolder.coverImage);
+        }
 
-    @Override
-    public boolean isEmpty() {
-        return false;
+        return v;
     }
 
     public class PlaceHolder{
@@ -82,4 +125,5 @@ public class DownloadAdapter extends BaseAdapter {
         TextView bookName;
         TextView bookDetail;
     }
+
 }

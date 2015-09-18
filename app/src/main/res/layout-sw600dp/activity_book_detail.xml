@@ -209,38 +209,5 @@
 
         </LinearLayout>
 
-        <FrameLayout
-            android:id="@+id/activity_shelf_panel_footer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="14dp"
-            android:paddingBottom="8dp"
-            android:background="#0D0E0F"  >
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_gravity="bottom|center_horizontal" >
-                <ImageButton
-                    android:id="@+id/download_menu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/download_tablet_inactive"/>
-
-
-                <ImageButton
-                    android:id="@+id/myshelf_menu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/myshelf_tablet_inactive"/>
-            </LinearLayout>
-
-
-
-        </FrameLayout>
-
     </LinearLayout>
 </RelativeLayout>

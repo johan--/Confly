@@ -9,7 +9,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -31,8 +30,9 @@ import java.util.concurrent.ExecutionException;
  * Created by Teebio on 8/25/15 AD.
  */
 public class ServiceRequest {
-    public static final String SERVICE = "webservice/";
+    public static final String SERVICE = "/webservice/";
     public static final String GET_PRODUCT_LIST = Constant.MAIN_URL+SERVICE+"get_product_list";
+    public static final String GET_CATEGORY_LIST = Constant.MAIN_URL+SERVICE+"get_product_category_list";
     public static final String MYLIB_API = "";
     public static final String ISSUE_DETAIL_API = "";
 
@@ -45,10 +45,17 @@ public class ServiceRequest {
         return defaultValue;
     }
 
-    public static JSONArray requestProductListAPI(){
+    public static JSONArray requestProductListAPI(String catId, String productMainId){
         JSONObject request = null;
         try {
-            request = new RequestTask().execute(GET_PRODUCT_LIST).get();
+            List<NameValuePair> params = defaultParam();
+            if (catId != null){
+                params.add(new BasicNameValuePair("category_aid",catId));
+                params.add(new BasicNameValuePair("product_main_aid",productMainId));
+            }
+            request = new RequestTask(params).execute(GET_PRODUCT_LIST).get();
+            if (request == null)
+                return null;
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -62,8 +69,59 @@ public class ServiceRequest {
         return null;
     }
 
-    public static class RequestTask extends AsyncTask<String, NameValuePair, JSONObject> {
+    public static JSONArray requestCategoryListAPI(String productMainId){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("product_main_aid", productMainId));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_CATEGORY_LIST).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONArray("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
+    public static JSONArray requestProductWithCategoryAPI(String productMainId){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("product_main_aid", productMainId));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_CATEGORY_LIST).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONArray("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static class RequestTask extends AsyncTask<String, List<NameValuePair>, JSONObject> {
+
+        List<NameValuePair>params;
+        public RequestTask(){
+
+        }
+        public RequestTask(List<NameValuePair> params){
+            this.params = params;
+        }
         @Override
         protected JSONObject doInBackground(String... params) {
             // TODO Auto-generated method stub
@@ -82,31 +140,15 @@ public class ServiceRequest {
             InputStream is = null;
             JSONObject jObj = null;
             String json = "";
-            // Create a new HttpClient and Post Header
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpPost httppost = new HttpPost("http://somewebsite.com/receiver.php");
-
-            try {
-                // Add your data
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("myHttpData", ""));
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost);
-
-            } catch (ClientProtocolException e) {
-                // TODO Auto-generated catch block
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-            }
             try{
-                List<NameValuePair> nameValuePairs = defaultParam();
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                //List<NameValuePair> nameValuePairs = defaultParam();
+                //httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
+                if (params == null)
+                    params = defaultParam();
                 DefaultHttpClient client = new DefaultHttpClient();
                 HttpPost post = new HttpPost(url);
-                post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                post.setEntity(new UrlEncodedFormEntity(params));
 
                 HttpResponse response = client.execute(post);
                 HttpEntity entity = response.getEntity();
