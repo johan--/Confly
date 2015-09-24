@@ -33,6 +33,7 @@ public class ServiceRequest {
     public static final String SERVICE = "/webservice/";
     public static final String GET_PRODUCT_LIST = Constant.MAIN_URL+SERVICE+"get_product_list";
     public static final String GET_CATEGORY_LIST = Constant.MAIN_URL+SERVICE+"get_product_category_list";
+    public static final String GET_FILE_CONFIG = Constant.MAIN_URL+SERVICE+"request_file";
     public static final String MYLIB_API = "";
     public static final String ISSUE_DETAIL_API = "";
 
@@ -85,6 +86,28 @@ public class ServiceRequest {
         }
         try {
             return request.getJSONArray("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject requestConfigFileAPI(String issueId){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("issue_id", issueId));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_FILE_CONFIG).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONObject("result");
         } catch (JSONException e) {
             e.printStackTrace();
         }

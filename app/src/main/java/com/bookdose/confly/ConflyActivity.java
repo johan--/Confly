@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,10 +25,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
-public class ConflyActivity extends FragmentActivity implements DownloadFragment.DownloadFragmentListener, DownloadPagerFragment.DownloadPagerListener, PopoverView.PopoverViewDelegate, CategorylistAdapter.CategoryListListener {
+import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.epub.EpubReader;
+
+public class ConflyActivity extends FragmentActivity implements DownloadFragment.DownloadFragmentListener, DownloadPagerFragment.DownloadPagerListener, PopoverView.PopoverViewDelegate, CategorylistAdapter.CategoryListListener, ShelfFragment.ShelfListenner {
 
     DownloadPagerFragment downloadFragment;
     @Override
@@ -162,7 +168,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     void pushMyshelfFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
         ShelfFragment shelfFragment = new ShelfFragment();
-        //downloadFragment.setDownloadFragmentListener(this);
+        shelfFragment.setShelfListenner(this);
         fragmentManager.beginTransaction()
                 .replace(R.id.contentPanel,shelfFragment)
                 .commit();
@@ -242,5 +248,56 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     @Override
     public void onSelectCategory(Category category) {
         downloadFragment.loadProductList(category.category_aid,category.product_main_aid);
+    }
+
+    @Override
+    public void openIssue(Issue issue) {
+        openBook(issue);
+    }
+
+    void openBook(Issue issue){
+        if (Helper.isEPub(issue)){
+            try {
+
+                // find InputStream for book
+
+
+                //InputStream epubInputStream = new FileInputStream(Helper.getBookDirectory()+"/"+issue.path+"/test.epub");
+                InputStream epubInputStream = new FileInputStream(Helper.getPathDecryptFile(issue));
+
+                // Load Book from inputStream
+
+                Book book = (new EpubReader()).readEpub(epubInputStream);
+
+
+                // Log the book's authors
+
+                Log.i("epublib", "author(s): " + book.getMetadata().getAuthors());
+
+
+                // Log the book's title
+
+                //Log.i("epublib", "title: " + book.getTitle());
+
+                // Log the book's coverimage property
+
+                //Bitmap coverImage = BitmapFactory.decodeStream(book.getCoverImage().getInputStream());
+
+                //Log.i("epublib", "Coverimage is " + coverImage.getWidth() + " by " + coverImage.getHeight() + " pixels");
+
+
+                // Log the tale of contents
+
+                //logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
+
+            } catch (IOException e) {
+
+                Log.e("epublib", e.getMessage());
+
+            }
+        }else {
+
+        }
+
     }
 }

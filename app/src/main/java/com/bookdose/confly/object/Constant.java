@@ -10,6 +10,16 @@ public class Constant {
     public static final String ISSUE = "issue";
 
     public static final String MAIN_URL = "http://conflyapp.com";
+
 //    public static final String VIRSION = "1.0.0";
 //    public static final String VIRSION = "1.0.0";
+
+    public static final String AES_KEY = "DqaUCZS4evTy8EGcM2Hj5wPs6z7pRJkW";
+    public static final String AES_IV = "RZCvtu5yhMWwQSIL";
+    public static final String PDF_PASSWORD = "vojglyi5PEHgILmFUhGIeGGsMlQFhQc4";
+
+/*    #define     AES_KEY             @"DqaUCZS4evTy8EGcM2Hj5wPs6z7pRJkW"
+            #define     AES_IV              @"RZCvtu5yhMWwQSIL"
+            #define     PDF_PASSWORD        @"vojglyi5PEHgILmFUhGIeGGsMlQFhQc4"
+            */
 }

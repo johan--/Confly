@@ -35,6 +35,16 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
         // Required empty public constructor
     }
 
+    public interface ShelfListenner{
+        void openIssue(Issue issue);
+    }
+
+    private ShelfListenner shelfListenner;
+
+    public void setShelfListenner(ShelfListenner shelfListenner){
+        this.shelfListenner = shelfListenner;
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -99,6 +109,7 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
 
     @Override
     public void didSelectedBook(Issue issue) {
-
+        if (shelfListenner != null)
+            shelfListenner.openIssue(issue);
     }
 }

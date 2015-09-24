@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.Helper;
+import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 import com.facebook.CallbackManager;
@@ -32,7 +33,12 @@ import com.facebook.share.Sharer;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -77,7 +83,8 @@ public class BookDetailActivity extends Activity {
                     coverView.buildDrawingCache();
                     Bitmap bm=coverView.getDrawingCache();
                     Helper.saveCoverImage(bm, issue.cover_image);
-                    downloadIssue();
+                    //downloadIssue();
+                    loadConfigFile();
                 }
             }
         });
@@ -158,6 +165,29 @@ public class BookDetailActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    void loadConfigFile(){
+        JSONObject obj = ServiceRequest.requestConfigFileAPI(issue.issue_aid);
+        try {
+            FileWriter file = new FileWriter(Helper.getConfigPath(issue));
+            file.write(obj.toString());
+            file.flush();
+            file.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            JSONObject detail = obj.getJSONObject("detail");
+            if(detail.getString("content_type").equals("epub")){
+                JSONArray pages = obj.getJSONArray("pages");
+                JSONObject page = pages.getJSONObject(0);
+                downloadePub(page.getString("link"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 
@@ -201,6 +231,9 @@ public class BookDetailActivity extends Activity {
         private PowerManager.WakeLock mWakeLock;
 
         public DownloadTask(Context context) {
+            this.context = context;
+        }
+        public DownloadTask(Context context, String url){
             this.context = context;
         }
 
@@ -256,9 +289,13 @@ public class BookDetailActivity extends Activity {
                 // might be -1: server did not report the length
                 int fileLength = connection.getContentLength();
 
+                String path = sUrl[0];
+                String lastPath = path.substring(path.lastIndexOf('/') + 1);
+
                 // download the file
                 input = connection.getInputStream();
-                output = new FileOutputStream("/sdcard/file_name.extension");
+                String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+lastPath;
+                output = new FileOutputStream(savePath);
 
                 byte data[] = new byte[4096];
                 long total = 0;
@@ -293,6 +330,27 @@ public class BookDetailActivity extends Activity {
         }
     }
 
+    public void downloadePub(String fileURL){
+        // instantiate it within the onCreate method
+
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("Download "+issue.content_name);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
+
+// execute this when the downloader must be fired
+        final DownloadTask downloadTask = new DownloadTask(this,fileURL);
+        downloadTask.execute(fileURL);
+
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                downloadTask.cancel(true);
+            }
+        });
+    }
+
     public void downloadIssue(){
         // instantiate it within the onCreate method
 
@@ -304,7 +362,7 @@ public class BookDetailActivity extends Activity {
 
 // execute this when the downloader must be fired
         final DownloadTask downloadTask = new DownloadTask(this);
-        downloadTask.execute("the url to the file you want to download");
+        downloadTask.execute();
 
         mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
             @Override

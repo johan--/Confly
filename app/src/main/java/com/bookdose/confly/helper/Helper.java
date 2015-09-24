@@ -10,8 +10,18 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
 
+import com.bookdose.confly.object.Issue;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.OutputStream;
 
 /**
@@ -90,6 +100,13 @@ public class Helper {
         }
     }
 
+    public static void createDirectory(String path){
+        File file = new File(path);
+        if(!file.exists()){
+            file.mkdirs();
+        }
+    }
+
     public static boolean fileExits(String path){
         File file = new File(path);
         return file.exists()& !file.isDirectory();
@@ -141,4 +158,79 @@ public class Helper {
         }
         return( path.delete() );
     }
+
+    public static String readFile(String filename) {
+        String result = "";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                line = br.readLine();
+            }
+            result = sb.toString();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static String getConfigPath(Issue issue){
+        String savePath = Helper.getBookDirectory()+"/"+issue.path; //issue.path = folder name
+        if (!Helper.fileExits(savePath)){
+            Helper.createDirectory(savePath);
+        }
+        return  savePath+"/"+issue.path+".json";
+    }
+
+    public static boolean isEPub(Issue issue){
+        String jsonData = readFile(getConfigPath(issue));
+        try {
+            JSONObject jobj = new JSONObject(jsonData);
+            JSONObject detail = jobj.getJSONObject("detail");
+            if(detail.getString("content_type").equals("epub")){
+                return true;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static String getFileEPubPath(Issue issue){
+        String jsonData = readFile(getConfigPath(issue));
+        try {
+            JSONObject jobj = new JSONObject(jsonData);
+            JSONObject detail = jobj.getJSONObject("detail");
+            if(detail.getString("content_type").equals("epub")){
+                JSONArray pages = jobj.getJSONArray("pages");
+                JSONObject page = pages.getJSONObject(0);
+                String path = page.getString("link");
+                String lastPath = path.substring(path.lastIndexOf('/') + 1);
+                String filePath = Helper.getBookDirectory()+"/"+issue.path+"/"+lastPath;
+                return filePath;
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
+
+    public static String getPathDecryptFile(Issue issue){
+        File extStore = new File(getFileEPubPath(issue));
+        try {
+            FileInputStream fis = new FileInputStream(extStore);
+            FileOutputStream fos = new FileOutputStream(extStore + ".decrypted");
+            if (FileEncrypt.decrypt(fis,fos)){
+                return extStore + ".decrypted";
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
+
 }
