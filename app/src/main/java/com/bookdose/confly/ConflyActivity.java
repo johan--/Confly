@@ -26,9 +26,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.epub.EpubReader;
@@ -161,7 +172,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         DownloadFragment downloadFragment = DownloadFragment.newInstance("", "");
         downloadFragment.setDownloadFragmentListener(this);
         fragmentManager.beginTransaction()
-                .replace(R.id.contentPanel,downloadFragment)
+                .replace(R.id.contentPanel, downloadFragment)
                 .commit();
     }
 
@@ -247,7 +258,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     @Override
     public void onSelectCategory(Category category) {
-        downloadFragment.loadProductList(category.category_aid,category.product_main_aid);
+        downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
     }
 
     @Override
@@ -258,16 +269,46 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     void openBook(Issue issue){
         if (Helper.isEPub(issue)){
             try {
+                final String EBC_NOPAD_CIPHER_TRANSFORMATION = "AES/ECB/NoPadding";
+                final String EBC_PKCS7_CIPHER_TRANSFORMATION = "AES/ECB/PKCS7Padding";
+                InputStream epubInputStream = new FileInputStream(Helper.getFileEPubPath(issue));
 
+                String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+issue.path+".epub";
+                OutputStream ops = new FileOutputStream(savePath);
+
+                CipherInputStream cis = null;
                 // find InputStream for book
+                SecretKey key = new SecretKeySpec(Constant.AES_KEY.getBytes("UTF-8"), "AES");
 
-
-                //InputStream epubInputStream = new FileInputStream(Helper.getBookDirectory()+"/"+issue.path+"/test.epub");
-                InputStream epubInputStream = new FileInputStream(Helper.getPathDecryptFile(issue));
+                try {
+                    Cipher cipher = null;
+//                    try {
+//                        //cipher = Cipher.getInstance("AES/ECB/PKCS7Padding", "BC");
+//
+//                    } catch (NoSuchProviderException e) {
+//                        e.printStackTrace();
+//                    }
+                    //cipher = Cipher.getInstance("AES/ECB/NoPadding");
+                    try {
+                        cipher = Cipher.getInstance(EBC_NOPAD_CIPHER_TRANSFORMATION, "BC");
+                    } catch (NoSuchProviderException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        cipher.init(Cipher.DECRYPT_MODE, key);
+                        cis = new CipherInputStream(epubInputStream, cipher);
+                    } catch (InvalidKeyException e) {
+                        e.printStackTrace();
+                    }
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (NoSuchPaddingException e) {
+                    e.printStackTrace();
+                }
 
                 // Load Book from inputStream
 
-                Book book = (new EpubReader()).readEpub(epubInputStream);
+                Book book = (new EpubReader()).readEpub(cis);
 
 
                 // Log the book's authors
