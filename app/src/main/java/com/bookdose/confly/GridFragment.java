@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 public class GridFragment extends Fragment implements GridIssueAdapter.GridIssueListener
 {
+	public boolean isEdit;
 	int mNum;
 	int mFirstImage = 0;
 	int mImageCount = -1;
@@ -63,6 +64,7 @@ public class GridFragment extends Fragment implements GridIssueAdapter.GridIssue
 		final GridView gridview = (GridView) rootView.findViewById(R.id.gridView);
 
 		final GridIssueAdapter gridIssueAdapter = new GridIssueAdapter(getActivity(), mTopicList, mFirstImage, mImageCount, gridview.getHeight());
+		gridIssueAdapter.isEdit = isEdit;
 		gridIssueAdapter.setGridIssueListener(this);
 		
 		ViewTreeObserver treeObserver = gridview.getViewTreeObserver();

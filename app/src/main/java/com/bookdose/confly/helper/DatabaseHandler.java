@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.bookdose.confly.object.Bookmark;
 import com.bookdose.confly.object.Issue;
 
 import java.io.File;
@@ -290,6 +291,19 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return issues;
     }
 
+    public String getIssueStatus(String path){
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT "+STATUS+" FROM " + TABLE_ISSUE+" WHERE "+PATH+"="+path;
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        String status = null;
+        if (cursor.moveToFirst()) {
+            do {
+                status = cursor.getString(cursor.getColumnIndex(STATUS));
+            }while (cursor.moveToNext());
+        }
+        return status;
+    }
+
     public int updateIssueStatus(String status, String id){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -301,6 +315,72 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_ISSUE, CONTENT_ID + " = ?",
                 new String[] { String.valueOf(issue.content_aid) });
+        db.close();
+    }
+
+    // Bookmark
+
+    public long insertBookmark(String contentID,int page, String contentName,String imageName){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+
+        values.put("page",page);
+        values.put("content_id",contentID);
+        values.put("content_name",contentName);
+        values.put("image_name",imageName);
+        // Inserting Row
+        long ret = db.insert("bookmark", null, values);
+        db.close(); // Closing database connection
+        return ret;
+    }
+
+    public ArrayList<Bookmark> getBookmark(String contentId){
+        ArrayList<Bookmark> bookmarks = new ArrayList<Bookmark>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM bookmark WHERE content_id=" + contentId;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                Bookmark bookmark = new Bookmark();
+                bookmark.page = cursor.getInt(cursor.getColumnIndex("page"));
+                bookmark.contentId = cursor.getString(cursor.getColumnIndex("content_id"));
+                bookmark.contentName = cursor.getString(cursor.getColumnIndex("content_name"));
+                bookmark.imageName = cursor.getString(cursor.getColumnIndex("image_name"));
+                //bookmark.page = cursor.getInt(cursor.getColumnIndex(CONTENT_ID));
+                bookmarks.add(bookmark);
+            } while (cursor.moveToNext());
+        }
+        db.close();
+        return bookmarks;
+    }
+
+    public Bookmark getBookmark(String contentId, int page){
+        String selectQuery = "SELECT  * FROM bookmark WHERE content_id=" + contentId+" AND page="+page;
+        Bookmark bookmark = new Bookmark();
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                bookmark.page = cursor.getInt(cursor.getColumnIndex("page"));
+                bookmark.contentId = cursor.getString(cursor.getColumnIndex("content_id"));
+                bookmark.contentName = cursor.getString(cursor.getColumnIndex("content_name"));
+                bookmark.imageName = cursor.getString(cursor.getColumnIndex("image_name"));
+                //bookmark.page = cursor.getInt(cursor.getColumnIndex(CONTENT_ID));
+
+            } while (cursor.moveToNext());
+        }
+        db.close();
+        return bookmark;
+    }
+
+    public void deleteBookmark(Bookmark bookmark) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete("bookmark", "content_id" + " = ? AND page="+bookmark.page,
+                new String[] { String.valueOf(bookmark.contentId) });
         db.close();
     }
 }

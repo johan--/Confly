@@ -26,6 +26,7 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
 
     FragmentPageAdapter mAdapter;
     ViewPager mPager;
+    public boolean isEdit;
 
     ArrayList<Issue> list = new ArrayList<Issue>();
 
@@ -45,19 +46,14 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
         this.shelfListenner = shelfListenner;
     }
 
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_shelf, container, false);
+    public void reloadData(){
         list = new DatabaseHandler(getActivity()).getAllIssue();
         mAdapter = new FragmentPageAdapter(getActivity().getSupportFragmentManager(), list, getResources());
         mAdapter.setPagerAdapterListener(this);
-        mPager = (ViewPager) rootView.findViewById(R.id.viewPagger);
+        mAdapter.isEdit = isEdit;
         mPager.setOffscreenPageLimit(4);
+        mPager.removeAllViews();;
         mPager.setAdapter(mAdapter);
-        llDots = (LinearLayout) rootView.findViewById(R.id.llDots);
 
         for (int i = 0; i < mAdapter.getCount(); i++)
         {
@@ -97,6 +93,18 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
 
             }
         });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View rootView = inflater.inflate(R.layout.fragment_shelf, container, false);
+
+        mPager = (ViewPager) rootView.findViewById(R.id.viewPagger);
+        llDots = (LinearLayout) rootView.findViewById(R.id.llDots);
+
+        reloadData();
 
         return rootView;
     }

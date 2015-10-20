@@ -17,13 +17,15 @@ public class FragmentPageAdapter extends FragmentStatePagerAdapter implements Gr
 	private int mNumFragments = 0;
 	private ArrayList<Issue> mTopicList;
 
+	public boolean isEdit;
+
 	private Resources resources;
 
 	static final int DEFAULT_NUM_FRAGMENTS = 1;
 	static final int DEFAULT_NUM_ITEMS = 1;
 
 	public interface PagerAdapterListener{
-		public void didSelectedBook(Issue issue);
+		void didSelectedBook(Issue issue);
 	}
 
 	private PagerAdapterListener pagerAdapterListener;
@@ -60,6 +62,7 @@ public class FragmentPageAdapter extends FragmentStatePagerAdapter implements Gr
 		args.putSerializable("topicList", mTopicList);
 
 		GridFragment f = new GridFragment();
+		f.isEdit = isEdit;
 		f.setGridFragmentListener(this);
 		f.setArguments(args);
 		return f;

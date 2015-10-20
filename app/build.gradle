@@ -23,6 +23,9 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.facebook.android:facebook-android-sdk:4.6.0'
+    compile project(':android-pdfview')
+    provided 'com.googlecode.androidannotations:androidannotations:2.7.1'
+    compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
     //compile 'universal-image-loader-1.9.4.jar'
     //compile files('libs/slf4j-android-1.6.1.jar')
     //compile files('libs/slf4j-android-1.5.8.jar')

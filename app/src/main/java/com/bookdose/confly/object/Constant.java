@@ -18,6 +18,10 @@ public class Constant {
     public static final String AES_IV = "RZCvtu5yhMWwQSIL";
     public static final String PDF_PASSWORD = "vojglyi5PEHgILmFUhGIeGGsMlQFhQc4";
 
+    public static final String DOWNLOADING_STATUS = "DOWNLOADING";
+    public static final String COMPLETE_STATUS = "COMPLETE";
+    public static final String FAIL_STATUS = "FAIL";
+
 /*    #define     AES_KEY             @"DqaUCZS4evTy8EGcM2Hj5wPs6z7pRJkW"
             #define     AES_IV              @"RZCvtu5yhMWwQSIL"
             #define     PDF_PASSWORD        @"vojglyi5PEHgILmFUhGIeGGsMlQFhQc4"

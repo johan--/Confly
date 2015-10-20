@@ -11,18 +11,30 @@
         android:maxLines="1"
         android:id="@+id/bookName"
         android:layout_gravity="center_horizontal" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/coverImage"
+            android:layout_width="match_parent"
+            android:layout_height="110dp"
+            android:layout_alignParentTop="false"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:scaleType="fitCenter"
+            android:layout_gravity="bottom"
+            android:layout_alignParentRight="false" />
 
-    <ImageView
-        android:id="@+id/coverImage"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="10dp"
-        android:clickable="true"
-        android:scaleType="fitCenter"
-        android:layout_gravity="bottom"
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/editBtn"
+            android:src="@drawable/btn_book_delete"
+            android:background="#0fff"
+            android:layout_alignTop="@+id/coverImage"
+            android:layout_alignRight="@+id/coverImage"/>
 
-         />
+    </RelativeLayout>
 </LinearLayout>

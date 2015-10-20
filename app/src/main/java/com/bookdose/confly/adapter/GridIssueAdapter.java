@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -30,6 +31,7 @@ public class GridIssueAdapter extends BaseAdapter implements View.OnClickListene
     private int mImageCount = -1; // -1 means that we display all images
     private int mNumTopics = 0;
     private ArrayList<Issue> mArrayList;
+    public boolean isEdit;
 
     public interface GridIssueListener{
         public void didSelectGridIssue(Issue issue);
@@ -89,6 +91,7 @@ public class GridIssueAdapter extends BaseAdapter implements View.OnClickListene
     {
         ImageView imgCover;
         TextView bookName;
+        ImageButton editBtn;
     }
 
     // create a new ImageView for each item referenced by the Adapter
@@ -107,11 +110,16 @@ public class GridIssueAdapter extends BaseAdapter implements View.OnClickListene
                     .findViewById(R.id.coverImage);
             viewHolder.bookName = (TextView) convertView
                     .findViewById(R.id.bookName);
+            viewHolder.editBtn = (ImageButton)convertView.findViewById(R.id.editBtn);
+
         }
         else
         {
             viewHolder = (ViewHolder) convertView.getTag();
         }
+        viewHolder.editBtn.setVisibility(View.INVISIBLE);
+        if (isEdit)
+            viewHolder.editBtn.setVisibility(View.VISIBLE);
 
         if (viewHolder != null)
         {
@@ -129,9 +137,10 @@ public class GridIssueAdapter extends BaseAdapter implements View.OnClickListene
                 viewHolder.imgCover.setImageBitmap(BitmapFactory.decodeFile(imgFile.getAbsolutePath()));
             }else {
                 imageLoader.displayImage(issue.getLargeCoverUrl(), viewHolder.imgCover);
-                viewHolder.bookName.setText(issue.content_name);
+
             }
 
+            viewHolder.bookName.setText(issue.content_name);
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, rowHeight / mContext.getResources().getInteger(R.integer. num_rows));
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
 

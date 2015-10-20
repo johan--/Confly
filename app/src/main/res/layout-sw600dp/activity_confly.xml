@@ -1,69 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainview"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_main"
     tools:context=".ConflyActivity">
     <LinearLayout
         android:id="@+id/activity_shelf_panel_all"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#FF9999">
+        >
 
-    <RelativeLayout
-        android:id="@+id/activity_shelf_panel_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="5dp"
-        android:paddingTop="6dp"
-        android:background="#0D0E0F">
-        <LinearLayout
+        <RelativeLayout
+            android:id="@+id/activity_shelf_panel_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="5dp"    >
-            <ImageButton
-                android:id="@+id/activity_btn_mag"
-                android:layout_width="wrap_content"
+            android:paddingBottom="5dp"
+            android:paddingTop="6dp"
+            android:background="#0D0E0F">
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/mag_inactive"/>
-            <ImageButton
-                android:id="@+id/activity_btn_book"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/book_inactive"/>
-            <ImageButton
-                android:id="@+id/activity_btn_doc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/doc_inactive"/>
+                android:paddingTop="5dp"
+                android:layout_marginLeft="5dp">
+                <ImageButton
+                    android:id="@+id/activity_btn_mag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/mag_inactive"/>
+                <ImageButton
+                    android:id="@+id/activity_btn_book"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/book_inactive"/>
+                <ImageButton
+                    android:id="@+id/activity_btn_doc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/doc_inactive"/>
             </LinearLayout>
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:paddingTop="3dp">
-            <ImageButton
-                android:id="@+id/activity_btn_search"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/search_icon"  />
-            <ImageButton
-                android:id="@+id/activity_btn_menu"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="3dp"
-                android:layout_marginRight="6dp"
-                android:background="@drawable/menu_inactive"
                 android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"/>
+                android:paddingTop="3dp">
+                <ImageButton
+                    android:id="@+id/activity_btn_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/search_icon"
+                    android:visibility="gone" />
+                <ImageButton
+                    android:id="@+id/activity_btn_menu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="3dp"
+                    android:layout_marginRight="6dp"
+                    android:background="@drawable/menu_inactive"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"/>
             </LinearLayout>
-    </RelativeLayout>
+        </RelativeLayout>
 
         <RelativeLayout
             android:id="@+id/activity_shelf_panel_header1"
@@ -83,30 +87,42 @@
                     android:text="My Shelf"
                     android:layout_marginBottom="5dp"
                     android:textSize="18dp"
-                    android:visibility="visible"/>
-                </LinearLayout>
+                    android:visibility="visible"
+                    android:layout_marginLeft="5dp" />
+            </LinearLayout>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:paddingTop="3dp">
+                <!--<ImageButton-->
+                <!--android:id="@+id/activity_btn_date"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginRight="6dp"-->
+                <!--android:background="@drawable/date_inactive"  />-->
+                <!--<ImageButton-->
+                <!--android:id="@+id/activity_btn_title"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:paddingTop="3dp"-->
+                <!--android:layout_marginRight="6dp"-->
+                <!--android:background="@drawable/title_inactive"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_centerVertical="true"/>-->
                 <ImageButton
-                    android:id="@+id/activity_btn_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:background="@drawable/date_inactive"  />
-                <ImageButton
-                    android:id="@+id/activity_btn_title"
+                    android:id="@+id/editBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingTop="3dp"
                     android:layout_marginRight="6dp"
-                    android:background="@drawable/title_inactive"
+                    android:src="@drawable/bin_inactive"
+                    android:background="#00ffffff"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"/>
             </LinearLayout>
-            </RelativeLayout>
+
+        </RelativeLayout>
 
 
         <FrameLayout
@@ -114,19 +130,20 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp">
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp">
             <!--<android.support.v4.view.ViewPager-->
-                <!--android:id="@+id/activity_shelf_pager_shelf"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:paddingTop="10dp"/>-->
+            <!--android:id="@+id/activity_shelf_pager_shelf"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:paddingTop="10dp"/>-->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/contentPanel">
 
             </FrameLayout>
+
             <LinearLayout
                 android:id="@+id/activity_shelf_panel_page_control_shelf"
                 android:layout_width="match_parent"
@@ -157,7 +174,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/download_tablet_inactive"/>
+                    android:background="@drawable/download_active" />
 
 
                 <ImageButton
@@ -165,7 +182,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                    android:background="@drawable/myshelf_tablet_inactive"/>
+                    android:background="@drawable/myshelf_active"/>
             </LinearLayout>
 
 

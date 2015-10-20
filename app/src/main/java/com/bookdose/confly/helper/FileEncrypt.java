@@ -1,22 +1,13 @@
 package com.bookdose.confly.helper;
 
+import android.util.Base64;
+
 import com.bookdose.confly.object.Constant;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -25,44 +16,80 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class FileEncrypt {
 
-    public static final String USE_CIPHER_TRANSFORMATION = "AES/CBC/PKCS5Padding";
+    public static final String USE_CIPHER_TRANSFORMATION = "AES/ECB/NoPadding";
     public static final String AES_ENCRYPT_ALGO = "AES";
 
-
-    public static byte[] encrypt(byte[] plainBytes){
-        try
-        {
-            SecretKeySpec keySpec = new SecretKeySpec(getAESKey(), AES_ENCRYPT_ALGO);
-
-            IvParameterSpec ivSpec = null;
-            if(USE_CIPHER_TRANSFORMATION.contains("CBC"))
-                ivSpec = new IvParameterSpec(getIVKey());
-
-            Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
-            if(ivSpec!=null)
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-            else
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-
-            byte[] encryptedBytes = cipher.doFinal(plainBytes);
-            //return encodeBytes(encryptedBytes);
-            return encryptedBytes;
+    public static byte[] getBytesFromInputStream(InputStream in)
+    {
+        try {
+            byte[] fileBytes = new byte[in.available()];
+            in.read( fileBytes);
+            in.close();
+            return fileBytes;
         }
-        catch(Exception e)
-        {
-            //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
+        catch (Exception e) {
+            //Log.e(AppCommon.TAG_DOWNLOAD, "Cannot get bytes from file " + file_path + ": " + e.getMessage());
             return null;
         }
     }
 
-    public static byte[] decrypt(byte[] plainBytes){
+    public static InputStream decrypt(InputStream inputStream){
         try
         {
-            SecretKeySpec keySpec = new SecretKeySpec(getAESKey(), AES_ENCRYPT_ALGO);
+            SecretKeySpec keySpec = new SecretKeySpec(Constant.AES_KEY.getBytes(), USE_CIPHER_TRANSFORMATION);
+
+            byte[] data = getBytesFromInputStream(inputStream);
+
+            byte[] datas = decrypt(Base64.decode(data, Base64.DEFAULT));
+
+            InputStream myInputStream = new ByteArrayInputStream(datas);
+            return myInputStream;
+        }
+        catch(Exception e)
+        {
+            //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] decrypt_data(InputStream inputStream){
+        try
+        {
+            SecretKeySpec keySpec = new SecretKeySpec(Constant.AES_KEY.getBytes(), USE_CIPHER_TRANSFORMATION);
+
+            byte[] data = getBytesFromInputStream(inputStream);
+
+            byte[] datas = decrypt(Base64.decode(data, Base64.DEFAULT));
+
+            return datas;
+        }catch (OutOfMemoryError ex){
+            ex.printStackTrace();
+            return null;
+        }
+        catch(Exception e)
+        {
+            //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static byte[] decrypt(byte[] cipherbytes)
+    {
+        if(cipherbytes==null)
+            return null;
+
+        if(cipherbytes.length==0)
+            return cipherbytes;
+
+        try
+        {
+            SecretKeySpec keySpec = new SecretKeySpec(Constant.AES_KEY.getBytes(), USE_CIPHER_TRANSFORMATION);
 
             IvParameterSpec ivSpec = null;
             if(USE_CIPHER_TRANSFORMATION.contains("CBC"))
-                ivSpec = new IvParameterSpec(getIVKey());
+                ivSpec = new IvParameterSpec(Constant.AES_IV.getBytes());
 
             Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
             if(ivSpec!=null)
@@ -70,175 +97,20 @@ public class FileEncrypt {
             else
                 cipher.init(Cipher.DECRYPT_MODE, keySpec);
 
-            byte[] decryptedBytes = cipher.doFinal(plainBytes);
-            //return encodeBytes(encryptedBytes);
-            return decryptedBytes;
-        }
-        catch(Exception e)
-        {
-            //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
+            //byte[] plainBytes = cipher.doFinal(decode(cipherbytes));
+            byte[] plainBytes = cipher.doFinal(cipherbytes);
+            return plainBytes;
+        }catch (OutOfMemoryError ex){
+            ex.printStackTrace();
             return null;
         }
-    }
-
-    public static boolean decrypt(FileInputStream fis, FileOutputStream fos){
-        try
-        {
-            SecretKeySpec keySpec = new SecretKeySpec(getAESKey(), AES_ENCRYPT_ALGO);
-
-            IvParameterSpec ivSpec = null;
-            if(USE_CIPHER_TRANSFORMATION.contains("CBC"))
-                ivSpec = new IvParameterSpec(getIVKey());
-
-            Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
-            if(ivSpec!=null)
-                cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
-            else
-                cipher.init(Cipher.DECRYPT_MODE, keySpec);
-
-            CipherInputStream cis = new CipherInputStream(fis, cipher);
-
-            int b;
-            byte[] d = new byte[8];
-            while ((b = cis.read(d)) != -1) {
-                fos.write(d, 0, b);
-            }
-            fos.flush();
-            fos.close();
-            cis.close();
-            return true;
-        }
         catch(Exception e)
         {
-            e.printStackTrace();
             //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
-            return false;
-        }
-    }
-
-    public static boolean encrypt(FileInputStream fis, FileOutputStream fos){
-        try
-        {
-            SecretKeySpec keySpec = new SecretKeySpec(getAESKey(), AES_ENCRYPT_ALGO);
-
-            IvParameterSpec ivSpec = null;
-            if(USE_CIPHER_TRANSFORMATION.contains("CBC"))
-                ivSpec = new IvParameterSpec(getIVKey());
-
-            Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
-            if(ivSpec!=null)
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-            else
-                cipher.init(Cipher.ENCRYPT_MODE, keySpec);
-
-            CipherInputStream cis = new CipherInputStream(fis, cipher);
-
-            int b;
-            byte[] d = new byte[8];
-            while ((b = cis.read(d)) != -1) {
-                fos.write(d, 0, b);
-            }
-            fos.flush();
-            fos.close();
-            cis.close();
-            return true;
-        }
-        catch(Exception e)
-        {
             e.printStackTrace();
-            //this.error_msg = "Error " + e.getClass().getName() + ":" + e.getMessage();
-            return false;
+            return null;
         }
-    }
-//    private static byte[] encrypt(byte[] raw, byte[] clear) throws Exception {
-//        SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ENCRYPT_ALGO);
-//        Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
-//        cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-//        byte[] encrypted = cipher.doFinal(clear);
-//        return encrypted;
-//    }
+    } //end decrypt
 
-    private static byte[] decrypt(byte[] raw, byte[] encrypted) throws Exception {
-        SecretKeySpec skeySpec = new SecretKeySpec(raw, AES_ENCRYPT_ALGO);
-        Cipher cipher = Cipher.getInstance(USE_CIPHER_TRANSFORMATION);
-        cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-        byte[] decrypted = cipher.doFinal(encrypted);
-        return decrypted;
-    }
-
-    public static byte[] getAESKey(){
-        byte[] keyStart = Constant.AES_KEY.getBytes();
-        KeyGenerator kgen = null;
-        try {
-            kgen = KeyGenerator.getInstance("AES");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        SecureRandom sr = null;
-        try {
-            sr = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        sr.setSeed(keyStart);
-        kgen.init(256, sr); // 192 and 256 bits may not be available
-        SecretKey skey = kgen.generateKey();
-        byte[] key = skey.getEncoded();
-        return key;
-    }
-
-    public static byte[] getIVKey(){
-        byte[] keyStart = Constant.AES_IV.getBytes();
-        KeyGenerator kgen = null;
-        try {
-            kgen = KeyGenerator.getInstance("AES");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        SecureRandom sr = null;
-        try {
-            sr = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        sr.setSeed(keyStart);
-        kgen.init(128, sr); // 192 and 256 bits may not be available
-        SecretKey skey = kgen.generateKey();
-        byte[] key = skey.getEncoded();
-        return key;
-    }
-
-    public static byte[] encrypt(byte[] ivBytes, byte[] keyBytes, byte[] textBytes)
-            throws java.io.UnsupportedEncodingException,
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
-
-        AlgorithmParameterSpec ivSpec = new IvParameterSpec(ivBytes);
-        SecretKeySpec newKey = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = null;
-        cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, newKey, ivSpec);
-        return cipher.doFinal(textBytes);
-    }
-
-    public static byte[] decrypt(byte[] ivBytes, byte[] keyBytes, byte[] textBytes)
-            throws java.io.UnsupportedEncodingException,
-            NoSuchAlgorithmException,
-            NoSuchPaddingException,
-            InvalidKeyException,
-            InvalidAlgorithmParameterException,
-            IllegalBlockSizeException,
-            BadPaddingException {
-
-        AlgorithmParameterSpec ivSpec = new IvParameterSpec(ivBytes);
-        SecretKeySpec newKey = new SecretKeySpec(keyBytes, "AES");
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, newKey, ivSpec);
-        return cipher.doFinal(textBytes);
-    }
 
 }

@@ -37,9 +37,9 @@
                 android:layout_marginTop="8dp"
                 android:singleLine="true"
                 android:ellipsize="end"
-                android:textColor="#135035"
+                android:textColor="#fff"
                 android:textStyle="bold"
-                android:textSize="22dp"
+                android:textSize="18dp"
                 android:gravity="center"/>
 
 
@@ -74,8 +74,7 @@
                 <ImageView
                     android:id="@+id/coverImage"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/no_image_detail" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
             <LinearLayout
                 android:layout_width="0dp"
@@ -115,7 +114,10 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="3dp"    >
+                        android:gravity="center_vertical"
+                        android:paddingTop="3dp"
+                        android:layout_toLeftOf="@+id/linearLayout2"
+                        android:layout_toStartOf="@+id/linearLayout2">
 
                         <TextView
                             android:id="@+id/bookTitle"
@@ -124,7 +126,7 @@
                             android:singleLine="true"
                             android:ellipsize="end"
                             android:text="BOOK TITLE"
-                            android:textSize="22dp"
+                            android:textSize="16dp"
                             android:textColor="#605f5f"
                             android:textStyle="bold"
                             android:gravity="center"/>
@@ -132,8 +134,10 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
                         android:layout_alignParentRight="true"
-                        android:paddingTop="3dp">
+                        android:paddingTop="3dp"
+                        android:id="@+id/linearLayout2">
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -189,7 +193,7 @@
                                 android:layout_height="wrap_content"
                                 android:scrollHorizontally="false"
                                 android:text="BOOK DESC"
-                                android:textSize="18dp"
+                                android:textSize="14dp"
                                 android:textColor="#aaa"
                                 android:textStyle="normal"
                                 android:layout_marginBottom="25dp"/>

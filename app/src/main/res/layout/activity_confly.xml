@@ -55,7 +55,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="6dp"
-                    android:background="@drawable/search_icon"  />
+                    android:background="@drawable/search_icon"
+                    android:visibility="gone" />
                 <ImageButton
                     android:id="@+id/activity_btn_menu"
                     android:layout_width="wrap_content"
@@ -94,22 +95,33 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:paddingTop="3dp">
+                <!--<ImageButton-->
+                    <!--android:id="@+id/activity_btn_date"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginRight="6dp"-->
+                    <!--android:background="@drawable/date_inactive"  />-->
+                <!--<ImageButton-->
+                    <!--android:id="@+id/activity_btn_title"-->
+                    <!--android:layout_width="wrap_content"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:paddingTop="3dp"-->
+                    <!--android:layout_marginRight="6dp"-->
+                    <!--android:background="@drawable/title_inactive"-->
+                    <!--android:layout_alignParentRight="true"-->
+                    <!--android:layout_centerVertical="true"/>-->
                 <ImageButton
-                    android:id="@+id/activity_btn_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginRight="6dp"
-                    android:background="@drawable/date_inactive"  />
-                <ImageButton
-                    android:id="@+id/activity_btn_title"
+                    android:id="@+id/editBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingTop="3dp"
                     android:layout_marginRight="6dp"
-                    android:background="@drawable/title_inactive"
+                    android:src="@drawable/bin_inactive"
+                    android:background="#00ffffff"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"/>
             </LinearLayout>
+
         </RelativeLayout>
 
 

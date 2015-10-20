@@ -3,12 +3,17 @@ package com.bookdose.confly.helper;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.bookdose.confly.object.Issue;
 
@@ -16,7 +21,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -79,6 +86,39 @@ public class Helper {
         return BOOKDOSE_MAIN_PATH + BOOKDOSE_PATH_ENDSWITH_COVER;
     }
 
+    public static String removeExtention(String filePath) {
+        // These first few lines the same as Justin's
+        File f = new File(filePath);
+
+        // if it's a directory, don't remove the extention
+        if (f.isDirectory()) return filePath;
+
+        String name = f.getName();
+
+        // Now we know it's a file - don't need to do any special hidden
+        // checking or contains() checking because of:
+        final int lastPeriodPos = name.lastIndexOf('.');
+        if (lastPeriodPos <= 0)
+        {
+            // No period after first character - return name as it was passed in
+            return filePath;
+        }
+        else
+        {
+            // Remove the last period and everything after it
+            File renamed = new File(f.getParent(), name.substring(0, lastPeriodPos));
+            return renamed.getPath();
+        }
+    }
+
+    public static String getThumbnailDirectory(String path){
+        String filePath = getBookDirectory()+"/"+path+"/"+"thumb";
+        final File m_fileBook = new File(filePath);
+        if (!m_fileBook.exists())
+            m_fileBook.mkdirs();
+        return filePath;
+    }
+
     public static void saveCoverImage(Bitmap bm,String fileName){
         OutputStream fOut = null;
         Uri outputFileUri;
@@ -109,7 +149,11 @@ public class Helper {
 
     public static boolean fileExits(String path){
         File file = new File(path);
-        return file.exists()& !file.isDirectory();
+        if (file.length()==0){
+            return false;
+        }
+        Log.d("size ",""+file.length());
+        return file.exists();
     }
 
     public static String findDeviceID(Context context) {
@@ -218,19 +262,196 @@ public class Helper {
         return null;
     }
 
-    public static String getPathDecryptFile(Issue issue){
-        File extStore = new File(getFileEPubPath(issue));
+    public static void createThumbnail(String filePath, String folderName){
+        FileInputStream epubInputStream = null;
+        BufferedOutputStream bos = null;
         try {
-            FileInputStream fis = new FileInputStream(extStore);
-            FileOutputStream fos = new FileOutputStream(extStore + ".decrypted");
-            if (FileEncrypt.decrypt(fis,fos)){
-                return extStore + ".decrypted";
+            epubInputStream = new FileInputStream(new File(filePath));
+            String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
+            String savePath = getThumbnailDirectory(folderName) + "/" + lastPath;
+
+            if (!Helper.fileExits(savePath)) {
+                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+                if (cis == null)
+                    return;
+
+                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                bos = new BufferedOutputStream(outputStream);
+                bos.write(cis, 0, cis.length);
+                bos.flush();
+                bos.close();
+
+                byte[] imageData = null;
+
+                //PDFView pdfView = new PDFView(getApplicationContext(),null);
+
+                Bitmap imageBitmap = decodeFile(new File(savePath));
+
+                int targetWidth = 150;
+
+                double aspectRatio = (double) imageBitmap.getHeight() / (double) imageBitmap.getWidth();
+                int targetHeight = (int) (targetWidth * aspectRatio);
+
+                //imageBitmap = Bitmap.createScaledBitmap(imageBitmap,(int)(imageBitmap.getWidth()*0.4), (int)(imageBitmap.getHeight()*0.4), true);
+                imageBitmap = Bitmap.createScaledBitmap(imageBitmap, targetWidth, targetHeight, true);
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+                imageData = baos.toByteArray();
+
+                outputStream = new FileOutputStream(new File(savePath));
+                bos = new BufferedOutputStream(outputStream);
+                bos.write(imageData, 0, imageData.length);
+                bos.flush();
+                bos.close();
+
+                Thread.sleep(10);
+
             }
-        } catch (FileNotFoundException e) {
+            //InputStream is = new ByteArrayInputStream(cis);
+            //imageView.setImageBitmap(decodeFile(new File(savePath)));
+        }catch (OutOfMemoryError e){
             e.printStackTrace();
-            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            //imageView.setImageResource(R.drawable.no_image_detail);
         }
-        return null;
     }
 
+    public static Bitmap bitmapWithPath(String path){
+        if (fileExits(path))
+            return decodeThumbFile(new File(path));
+        else{
+            Bitmap b = Bitmap.createBitmap(150, 150, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(b);
+            Paint paint = new Paint();
+            paint.setColor(Color.BLACK);
+            paint.setTextSize(10);
+            canvas.drawPaint(paint);
+            //canvas.drawText("Loading", x, y, paint);
+            canvas.drawARGB(1,0,0,0);
+            Log.d("thumb", "width = " + b.getWidth());
+            return b;
+        }
+    }
+
+    public static Bitmap decodeThumbFile(File f) {
+        try {
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 100;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+//            while(o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+//                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+//                scale *= 2;
+//            }
+            final int halfHeight = o.outHeight ;
+            final int halfWidth = o.outWidth ;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / scale) > REQUIRED_SIZE
+                    && (halfWidth / scale) > REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            // Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            //o2.inSampleSize = calculateInSampleSize(o, 70, 70);
+            o2.inSampleSize = 1;
+            //o2.inSampleSize = calculateInSampleSize(o2, reqWidth, reqHeight);
+            Bitmap bm = BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+            //Log.d("thumb","width = "+bm.getWidth());
+            //Canvas canvas = new Canvas(bm);
+            return bm;
+        }catch (OutOfMemoryError e){
+//            Bitmap b = Bitmap.createBitmap(150, 150, Bitmap.Config.ARGB_8888);
+//            Canvas canvas = new Canvas(b);
+//            Paint paint = new Paint();
+//            paint.setColor(Color.BLACK);
+//            paint.setTextSize(10);
+//            canvas.drawPaint(paint);
+//            //canvas.drawText("Loading", x, y, paint);
+//            canvas.drawARGB(1,0,0,0);
+//            Log.d("thumb", "width = " + b.getWidth());
+            return null;
+        }catch (FileNotFoundException e) {
+//            Bitmap b = Bitmap.createBitmap(150, 150, Bitmap.Config.ARGB_8888);
+//            Canvas canvas = new Canvas(b);
+//            Paint paint = new Paint();
+//            paint.setColor(Color.BLACK);
+//            paint.setTextSize(10);
+//            canvas.drawPaint(paint);
+//            //canvas.drawText("Loading", x, y, paint);
+//            canvas.drawARGB(1,0,0,0);
+//            Log.d("thumb", "width = " + b.getWidth());
+            return null;
+        }
+    }
+
+    public static Bitmap decodeFile(File f) {
+        try {
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(new FileInputStream(f), null, o);
+
+            // The new size we want to scale to
+            final int REQUIRED_SIZE = 100;
+
+            // Find the correct scale value. It should be the power of 2.
+            int scale = 1;
+//            while(o.outWidth / scale / 2 >= REQUIRED_SIZE &&
+//                    o.outHeight / scale / 2 >= REQUIRED_SIZE) {
+//                scale *= 2;
+//            }
+            final int halfHeight = o.outHeight ;
+            final int halfWidth = o.outWidth ;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / scale) > REQUIRED_SIZE
+                    && (halfWidth / scale) > REQUIRED_SIZE) {
+                scale *= 2;
+            }
+
+            // Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            //o2.inSampleSize = calculateInSampleSize(o, 70, 70);
+            o2.inSampleSize = scale;
+            //o2.inSampleSize = calculateInSampleSize(o2, reqWidth, reqHeight);
+            Bitmap bm = BitmapFactory.decodeStream(new FileInputStream(f), null, o2);
+            //Log.d("thumb","width = "+bm.getWidth());
+            //Canvas canvas = new Canvas(bm);
+            return bm;
+        }catch (OutOfMemoryError e){
+//            Bitmap b = Bitmap.createBitmap(150, 150, Bitmap.Config.ARGB_8888);
+//            Canvas canvas = new Canvas(b);
+//            Paint paint = new Paint();
+//            paint.setColor(Color.BLACK);
+//            paint.setTextSize(10);
+//            canvas.drawPaint(paint);
+//            //canvas.drawText("Loading", x, y, paint);
+//            canvas.drawARGB(1,0,0,0);
+//            Log.d("thumb", "width = " + b.getWidth());
+            return null;
+        }catch (FileNotFoundException e) {
+//            Bitmap b = Bitmap.createBitmap(150, 150, Bitmap.Config.ARGB_8888);
+//            Canvas canvas = new Canvas(b);
+//            Paint paint = new Paint();
+//            paint.setColor(Color.BLACK);
+//            paint.setTextSize(10);
+//            canvas.drawPaint(paint);
+//            //canvas.drawText("Loading", x, y, paint);
+//            canvas.drawARGB(1,0,0,0);
+//            Log.d("thumb", "width = " + b.getWidth());
+            return null;
+        }
+    }
 }

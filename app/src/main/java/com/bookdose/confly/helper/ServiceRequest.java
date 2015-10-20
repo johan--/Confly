@@ -43,6 +43,7 @@ public class ServiceRequest {
         defaultValue.add(new BasicNameValuePair("appname", Constant.APP_NAME));
         defaultValue.add(new BasicNameValuePair("device_id", "123456"));
         defaultValue.add(new BasicNameValuePair("version", Constant.VERSION));
+        //defaultValue.add(new BasicNameValuePair("is_image", "0"));
         return defaultValue;
     }
 

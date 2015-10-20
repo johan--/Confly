@@ -1,5 +1,8 @@
 package com.bookdose.confly;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -13,8 +16,10 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 
+import com.bookdose.confly.EpubReader.EPubReaderActivity;
 import com.bookdose.confly.adapter.CategorylistAdapter;
 import com.bookdose.confly.helper.DatabaseHandler;
+import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Category;
@@ -25,28 +30,31 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.io.Serializable;
 import java.util.ArrayList;
-
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.epub.EpubReader;
 
 public class ConflyActivity extends FragmentActivity implements DownloadFragment.DownloadFragmentListener, DownloadPagerFragment.DownloadPagerListener, PopoverView.PopoverViewDelegate, CategorylistAdapter.CategoryListListener, ShelfFragment.ShelfListenner {
 
     DownloadPagerFragment downloadFragment;
+    ShelfFragment shelfFragment;
+    ImageButton editBtn;
+    ImageButton bookBt;
+    ImageButton docBt;
+    ImageButton menuBt;
+    ImageButton downloadMenu;
+    ImageButton mylibraryMenu;
+    ImageButton magBt;
+
+    String result = "WAIT";
+
+    boolean isEdit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,9 +64,10 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             pushLibraryFragment();
         else
             pushLibraryFragment();
-        final ImageButton downloadMenu = (ImageButton)findViewById(R.id.download_menu);
-        final ImageButton mylibraryMenu = (ImageButton)findViewById(R.id.myshelf_menu);
-        ImageButton magBt = (ImageButton)findViewById(R.id.activity_btn_mag);
+
+        downloadMenu = (ImageButton)findViewById(R.id.download_menu);
+        mylibraryMenu = (ImageButton)findViewById(R.id.myshelf_menu);
+        magBt = (ImageButton)findViewById(R.id.activity_btn_mag);
         magBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,7 +75,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
-        ImageButton bookBt = (ImageButton)findViewById(R.id.activity_btn_book);
+        bookBt = (ImageButton)findViewById(R.id.activity_btn_book);
         bookBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -74,7 +83,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
-        ImageButton docBt = (ImageButton)findViewById(R.id.activity_btn_doc);
+        docBt = (ImageButton)findViewById(R.id.activity_btn_doc);
         docBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,11 +91,29 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
-        ImageButton menuBt = (ImageButton)findViewById(R.id.activity_btn_menu);
+        menuBt = (ImageButton)findViewById(R.id.activity_btn_menu);
         menuBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showMenuiew();
+            }
+        });
+
+        editBtn = (ImageButton)findViewById(R.id.editBtn);
+        editBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                isEdit = !isEdit;
+                if (isEdit){
+                    editBtn.setImageResource(R.drawable.bin_active);
+                }else {
+                    editBtn.setImageResource(R.drawable.bin_inactive);
+                }
+
+                shelfFragment.isEdit = isEdit;
+                shelfFragment.reloadData();
+
             }
         });
 
@@ -95,6 +122,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         downloadMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showContentMenu();
                 pushLibraryFragment();
                 downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_inactive));
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_active));
@@ -103,6 +131,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         mylibraryMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showShelfMenu();
                 pushMyshelfFragment();
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_inactive));
                 downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_active));
@@ -110,7 +139,13 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         });
 
         connectDatatBase();
+        showContentMenu();
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -134,6 +169,33 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (result.equals("SUCCESS")){
+            pushMyshelfFragment();
+            result = "";
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                result = data.getStringExtra("result");
+
+                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_inactive));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_active));
+                showShelfMenu();
+
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }//onActivityResult
 
     void showPopoverCategory(String catID, View view){
         //get root layout
@@ -178,7 +240,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     void pushMyshelfFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
-        ShelfFragment shelfFragment = new ShelfFragment();
+        shelfFragment = new ShelfFragment();
         shelfFragment.setShelfListenner(this);
         fragmentManager.beginTransaction()
                 .replace(R.id.contentPanel,shelfFragment)
@@ -196,11 +258,21 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     }
 
     void showBookDetail(Issue issue){
+//        DownloadListener downloadListener = new DownloadListener() {
+//            @Override
+//            public void onDownloadCompleted(Issue issue) {
+//                showShelfMenu();
+//                pushMyshelfFragment();
+//                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_inactive));
+//                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_active));
+//            }
+//        };
         Intent intent = new Intent(this,BookDetailActivity.class);
         Bundle b = new Bundle();
         b.putParcelable(Constant.ISSUE, issue);
+        //b.putSerializable("Listener", downloadListener);
         intent.putExtras(b);
-        startActivity(intent);
+        startActivityForResult(intent, 1);
     }
 
     public void connectDatatBase(){
@@ -224,6 +296,20 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 //            throw sqle;
 //
 //        }
+    }
+
+    void showContentMenu(){
+        docBt.setVisibility(View.VISIBLE);
+        bookBt.setVisibility(View.VISIBLE);
+        magBt.setVisibility(View.VISIBLE);
+        editBtn.setVisibility(View.INVISIBLE);
+    }
+
+    void showShelfMenu(){
+        docBt.setVisibility(View.INVISIBLE);
+        bookBt.setVisibility(View.INVISIBLE);
+        magBt.setVisibility(View.INVISIBLE);
+        editBtn.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -263,73 +349,60 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     @Override
     public void openIssue(Issue issue) {
-        openBook(issue);
+        if (isEdit)
+            editIssue(issue);
+        else
+            openBook(issue);
+    }
+
+    void editIssue(final Issue issue){
+        new AlertDialog.Builder(this)
+                .setTitle("Delete entry")
+                .setMessage("Are you sure you want to delete this entry?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                        deleteIssue(issue);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    void deleteIssue(Issue issue){
+        new DatabaseHandler(this).deleteIssue(issue);
+        String issuePath = Helper.getBookDirectory()+"/"+issue.path;
+        Helper.deleteDirectory(new File(issuePath));
+        shelfFragment.reloadData();
     }
 
     void openBook(Issue issue){
         if (Helper.isEPub(issue)){
             try {
-                final String EBC_NOPAD_CIPHER_TRANSFORMATION = "AES/ECB/NoPadding";
-                final String EBC_PKCS7_CIPHER_TRANSFORMATION = "AES/ECB/PKCS7Padding";
+
                 InputStream epubInputStream = new FileInputStream(Helper.getFileEPubPath(issue));
 
                 String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+issue.path+".epub";
-                OutputStream ops = new FileOutputStream(savePath);
 
-                CipherInputStream cis = null;
-                // find InputStream for book
-                SecretKey key = new SecretKeySpec(Constant.AES_KEY.getBytes("UTF-8"), "AES");
+                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
 
-                try {
-                    Cipher cipher = null;
-//                    try {
-//                        //cipher = Cipher.getInstance("AES/ECB/PKCS7Padding", "BC");
-//
-//                    } catch (NoSuchProviderException e) {
-//                        e.printStackTrace();
-//                    }
-                    //cipher = Cipher.getInstance("AES/ECB/NoPadding");
-                    try {
-                        cipher = Cipher.getInstance(EBC_NOPAD_CIPHER_TRANSFORMATION, "BC");
-                    } catch (NoSuchProviderException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        cipher.init(Cipher.DECRYPT_MODE, key);
-                        cis = new CipherInputStream(epubInputStream, cipher);
-                    } catch (InvalidKeyException e) {
-                        e.printStackTrace();
-                    }
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (NoSuchPaddingException e) {
-                    e.printStackTrace();
-                }
-
-                // Load Book from inputStream
-
-                Book book = (new EpubReader()).readEpub(cis);
+                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(cis,0,cis.length);
+                bos.flush();
+                bos.close();
 
 
-                // Log the book's authors
+                Intent i = new Intent(this, EPubReaderActivity.class);
+                i.putExtra("path", savePath);
+                i.putExtra("name", issue.content_name);
 
-                Log.i("epublib", "author(s): " + book.getMetadata().getAuthors());
-
-
-                // Log the book's title
-
-                //Log.i("epublib", "title: " + book.getTitle());
-
-                // Log the book's coverimage property
-
-                //Bitmap coverImage = BitmapFactory.decodeStream(book.getCoverImage().getInputStream());
-
-                //Log.i("epublib", "Coverimage is " + coverImage.getWidth() + " by " + coverImage.getHeight() + " pixels");
-
-
-                // Log the tale of contents
-
-                //logTableOfContents(book.getTableOfContents().getTocReferences(), 0);
+                startActivity(i);
 
             } catch (IOException e) {
 
@@ -337,8 +410,16 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
             }
         }else {
-
+            Bundle b = new Bundle();
+            b.putParcelable(Constant.ISSUE, issue);
+            Intent intent = new Intent(this,ImageReaderActivity.class);
+            intent.putExtras(b);
+            startActivity(intent);
         }
 
+    }
+
+    public interface DownloadListener extends Serializable {
+        void onDownloadCompleted(Issue issue);
     }
 }
