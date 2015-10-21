@@ -1,6 +1,8 @@
 package com.bookdose.confly;
 
 
+import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,16 +12,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
-import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.TouchImageView;
 import com.joanzapata.pdfview.PDFView;
 
+import org.vudroid.core.codec.CodecDocument;
+import org.vudroid.core.codec.CodecPage;
+import org.vudroid.pdfdroid.codec.PdfContext;
+
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,9 +114,9 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
             renderPDF();
         }else {
             //imageView.setImageResource(R.drawable.no_image_detail);
-            String status = new DatabaseHandler(getActivity()).getIssueStatus(contentName);
-            if (status != null)
-                if (!status.equals(Constant.DOWNLOADING_STATUS))
+//            String status = new DatabaseHandler(getActivity()).getIssueStatus(contentName);
+//            if (status != null)
+//                if (!status.equals(Constant.DOWNLOADING_STATUS))
                     downloade(filePath);
         }
         return rootView;
@@ -186,6 +192,49 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
         }
     }
 
+    public void renderThumb(String filePath){
+        try {
+
+            PdfContext pdf_conext = new PdfContext();
+            CodecDocument d = pdf_conext.openDocument(filePath);
+
+            CodecPage vuPage = d.getPage(0); // choose your page number
+            RectF rf = new RectF();
+            rf.bottom = rf.right = (float)1.0;
+            Bitmap bitmap = vuPage.renderBitmap(150, 150, rf);
+            String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
+            String savePath = Helper.getThumbnailDirectory(contentName) + "/" + lastPath;
+
+            BufferedOutputStream bos = null;
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+            byte[] imageData = baos.toByteArray();
+
+            savePath = Helper.removeExtention(savePath);
+            String thumbPath = savePath+".jpg";
+
+            FileOutputStream outputStream = null;
+
+            outputStream = new FileOutputStream(new File(thumbPath));
+            bos = new BufferedOutputStream(outputStream);
+            bos.write(imageData, 0, imageData.length);
+            bos.flush();
+            bos.close();
+
+            Thread.sleep(10);
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+    }
+
 //    void setImage(){
 //        InputStream epubInputStream = null;
 //        try {
@@ -244,7 +293,8 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
             progressBar.setVisibility(View.GONE);
             //setImage();
             renderPDF();
-            Helper.createThumbnail(path,contentName);
+
+            //Helper.createThumbnail(path,contentName);
             Log.d("Load image","complete");
         }
 
@@ -292,7 +342,7 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
                         publishProgress((int) (total * 100 / fileLength));
                     output.write(data, 0, count);
                 }
-
+                renderThumb(savePath);
                 //Helper.createThumbnail(savePath,contentName);
             } catch (Exception e) {
                 return e.toString();

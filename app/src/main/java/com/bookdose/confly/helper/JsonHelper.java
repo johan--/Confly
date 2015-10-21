@@ -61,7 +61,8 @@ public class JsonHelper {
                 JSONObject page = pages.getJSONObject(i);
                 String path = page.getString("link");
                 String lastPath = path.substring(path.lastIndexOf('/') + 1);
-                links.add(thumbPath+"/"+lastPath);
+                lastPath = Helper.removeExtention(lastPath);
+                links.add(thumbPath+"/"+lastPath+".jpg");
             }
         } catch (JSONException e) {
             e.printStackTrace();

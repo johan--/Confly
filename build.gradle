@@ -16,6 +16,7 @@ allprojects {
     apply plugin: 'maven'
 
     group = 'com.joanzapata.pdfview'
+    group = 'org.gradle.api.publication.maven.internal.deployer.DefaultGroovyMavenDeployer'
     version = version
 
     repositories {

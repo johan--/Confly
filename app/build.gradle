@@ -24,12 +24,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.1.1'
     compile 'com.facebook.android:facebook-android-sdk:4.6.0'
     compile project(':android-pdfview')
+    compile project(':hlist')
     provided 'com.googlecode.androidannotations:androidannotations:2.7.1'
     compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
-    //compile 'universal-image-loader-1.9.4.jar'
-    //compile files('libs/slf4j-android-1.6.1.jar')
-    //compile files('libs/slf4j-android-1.5.8.jar')
-    //compile 'org.mockito:mockito-core:1.9.5'
     compile files('libs/epublib-core-latest.jar')
-    //compile group: 'org.apache.logging.log4j', name: 'log4j-nosql', version: '2.3'
 }

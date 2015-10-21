@@ -112,7 +112,7 @@ public class Helper {
     }
 
     public static String getThumbnailDirectory(String path){
-        String filePath = getBookDirectory()+"/"+path+"/"+"thumb";
+        String filePath = getBookDirectory()+"/"+path+"/thumb";
         final File m_fileBook = new File(filePath);
         if (!m_fileBook.exists())
             m_fileBook.mkdirs();

@@ -1,1 +1,1 @@
-include ':app', ':universalImageLoaderlibrary', ':gridViewPager', ':facebook', ':android-pdfview'
+include ':app', ':universalImageLoaderlibrary', ':gridViewPager', ':facebook', ':android-pdfview', ':hlist'

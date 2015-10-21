@@ -1,6 +1,5 @@
 package com.bookdose.confly;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -8,12 +7,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.pdf.PdfRenderer;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
@@ -25,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bookdose.confly.helper.DatabaseHandler;
+import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.JsonHelper;
 import com.bookdose.confly.helper.ServiceRequest;
@@ -41,11 +39,14 @@ import com.facebook.share.widget.ShareDialog;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.vudroid.pdfdroid.codec.PdfDocument;
+import org.vudroid.core.codec.CodecDocument;
+import org.vudroid.core.codec.CodecPage;
+import org.vudroid.pdfdroid.codec.PdfContext;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -102,7 +103,7 @@ public class BookDetailActivity extends Activity {
         TextView bookTitleHeader = (TextView)findViewById(R.id.bookTitleHeader);
         TextView bookDetail = (TextView)findViewById(R.id.detailText);
 
-        ImageButton downloadBtn = (ImageButton)findViewById(R.id.downloadBtn);
+        final ImageButton downloadBtn = (ImageButton)findViewById(R.id.downloadBtn);
         DatabaseHandler databaseHandler = new DatabaseHandler(this);
         if (databaseHandler.getIssue(Integer.parseInt(issue.content_aid)) != null){
             downloadBtn.setBackgroundResource(R.drawable.already_tablet_icon);
@@ -112,14 +113,16 @@ public class BookDetailActivity extends Activity {
         downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DatabaseHandler databaseHandler = new DatabaseHandler(BookDetailActivity.this);
-                if(databaseHandler.addIssue(issue)>0) {
-                    coverView.buildDrawingCache();
-                    Bitmap bm=coverView.getDrawingCache();
-                    Helper.saveCoverImage(bm, issue.cover_image);
-                    //downloadIssue();
-                    loadConfigFile();
+                if (loadConfigFile()){
+                    DatabaseHandler databaseHandler = new DatabaseHandler(BookDetailActivity.this);
+                    if(databaseHandler.addIssue(issue)>0) {
+                        coverView.buildDrawingCache();
+                        Bitmap bm=coverView.getDrawingCache();
+                        Helper.saveCoverImage(bm, issue.cover_image);
+                        //downloadIssue();
+                    }
                 }
+
             }
         });
 
@@ -199,7 +202,7 @@ public class BookDetailActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    void loadConfigFile(){
+    boolean loadConfigFile(){
         JSONObject obj = ServiceRequest.requestConfigFileAPI(issue.issue_aid);
         try {
             FileWriter file = new FileWriter(Helper.getConfigPath(issue));
@@ -207,10 +210,6 @@ public class BookDetailActivity extends Activity {
             file.flush();
             file.close();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
             JSONObject detail = obj.getJSONObject("detail");
             if(detail.getString("content_type").equals("epub")){
                 JSONArray pages = obj.getJSONArray("pages");
@@ -220,8 +219,13 @@ public class BookDetailActivity extends Activity {
                 ArrayList<String> links = JsonHelper.getLinkDownload(issue);
                 downloadIssue(links);
             }
+            return true;
         } catch (JSONException e) {
             e.printStackTrace();
+            return false;
+        }catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -260,23 +264,18 @@ public class BookDetailActivity extends Activity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void renderThumb(String filePath){
         try {
-            PdfDocument doc = PdfDocument.openDocument(filePath,"");
+
+            PdfContext pdf_conext = new PdfContext();
+            CodecDocument d = pdf_conext.openDocument(filePath);
+
+            CodecPage vuPage = d.getPage(0); // choose your page number
+            RectF rf = new RectF();
+            rf.bottom = rf.right = (float)1.0;
+            Bitmap bitmap = vuPage.renderBitmap(150, 150, rf);
             String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
             String savePath = Helper.getThumbnailDirectory(issue.path) + "/" + lastPath;
-            ParcelFileDescriptor fd = ParcelFileDescriptor.open(new File(filePath), ParcelFileDescriptor.MODE_READ_ONLY);
-
-            PdfRenderer mPdfRenderer = new PdfRenderer(fd);
-            // Open page with specified index
-            PdfRenderer.Page mCurrentPage = mPdfRenderer.openPage(0);
-            Bitmap bitmap = Bitmap.createBitmap(mCurrentPage.getWidth(),
-                    mCurrentPage.getHeight(), Bitmap.Config.ARGB_8888);
-
-            // Pdf page is rendered on Bitmap
-            mCurrentPage.render(bitmap, null, null,
-                    PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
 
             BufferedOutputStream bos = null;
 
@@ -307,6 +306,34 @@ public class BookDetailActivity extends Activity {
         }
 
     }
+
+    void renderPDF(String path){
+        InputStream epubInputStream = null;
+        try {
+            epubInputStream = new FileInputStream(new File(path));
+            String lastPath = path.substring(path.lastIndexOf('/') + 1);
+            String folderPath = Helper.getBookDirectory() + "/" + issue.path + "/" + issue.path;
+            if (!Helper.fileExits(folderPath)){
+                Helper.createDirectory(folderPath);
+            }
+            String savePath = folderPath+"/" + lastPath;
+            if (!Helper.fileExits(savePath)) {
+                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+
+                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(cis, 0, cis.length);
+                bos.flush();
+                bos.close();
+            }
+            //InputStream is = new ByteArrayInputStream(cis);
+            renderThumb(savePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //imageView.setImageResource(R.drawable.no_image_detail);
+        }
+    }
+
 
     // usually, subclasses of AsyncTask are declared inside the activity class.
 // that way, you can easily modify the UI thread from here
@@ -411,7 +438,7 @@ public class BookDetailActivity extends Activity {
                         output.write(data, 0, count);
                     }
 
-                    renderThumb(savePath);
+                    renderPDF(savePath);
 
                     //Helper.createThumbnail(savePath,issue.path);
                 }

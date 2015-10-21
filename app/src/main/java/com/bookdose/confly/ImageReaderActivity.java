@@ -1,25 +1,31 @@
 package com.bookdose.confly;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.bookdose.confly.adapter.BookmarkAdapter;
 import com.bookdose.confly.adapter.ImageReaderAdapter;
 import com.bookdose.confly.helper.DatabaseHandler;
+import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.JsonHelper;
 import com.bookdose.confly.object.Bookmark;
@@ -27,7 +33,15 @@ import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 import com.joanzapata.pdfview.PDFView;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
+
+import it.sephiroth.android.library.widget.HListView;
 
 public class ImageReaderActivity extends FragmentActivity implements ImageReaderAdapter.ImageReaderAdapterListener, ViewPager.OnPageChangeListener, BookmarkAdapter.BookmarkListener {
 
@@ -46,6 +60,8 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
     boolean isShowBookmark;
     ArrayList<String> thumbList;
 
+    HListView listView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +77,7 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
         adapter.setPagerAdapterListener(this);
 
         mPager = (ViewPager)findViewById(R.id.viewPagger);
-        mPager.setOffscreenPageLimit(3);
+        mPager.setOffscreenPageLimit(2);
         mPager.addOnPageChangeListener(this);
         mPager.setOnPageChangeListener(this);
         mPager.setAdapter(adapter);
@@ -74,9 +90,13 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
             }
         });
 
+//        listView = (HListView) findViewById( R.id.hListView1 );
+//        listView.setHeaderDividersEnabled(true);
+//        listView.setFooterDividersEnabled(true);
+
 
         initToolbarHeader();
-        //generateThumbnail();
+        generateThumbnail();
     }
 
     @Override
@@ -203,7 +223,7 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
 
         isShowToolbar = true;
         //toolbarHeader = (LinearLayout) findViewById(R.id.toolbar_header);
-        thumbScroll = (HorizontalScrollView)findViewById(R.id.thumbScroll);
+        //thumbScroll = (HorizontalScrollView)findViewById(R.id.thumbScroll);
         topToolbar = (LinearLayout)findViewById(R.id.top_toolbar);
         bookmarkBar = (LinearLayout)findViewById(R.id.bookmarkBar);
         markList = (ListView)findViewById(R.id.markList);
@@ -276,8 +296,13 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            PDFView pdfView = new PDFView(getApplicationContext(),null);
+            //PDFView pdfView = new PDFView(getApplicationContext(),null);
         }
+
+//        thumbList = JsonHelper.getThumbnails(issue);
+//        //ThumbAdapter thumbAdapter = new ThumbAdapter(this,thumbList, issue.path);
+//        ThumbAdapter thumbAdapter = new ThumbAdapter( this, R.layout.thumbnail_view, R.id.page, thumbList,R.id.thumbPdf,issue.path, R.id.image );
+//        listView.setAdapter(thumbAdapter);
     }
 
     @Override
@@ -305,5 +330,163 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
     @Override
     public void onSelectBookmark(Bookmark bookmark) {
         mPager.setCurrentItem(bookmark.page);
+    }
+
+    class ThumbAdapter extends ArrayAdapter<String> {
+
+        List<String> mItems;
+        LayoutInflater mInflater;
+        String issueName;
+        int mResource;
+        int mTextResId;
+        int mPDFId;
+        int mImageId;
+
+//        public ThumbAdapter( Context context, List<String> objects, String issueName ) {
+//            mInflater = LayoutInflater.from( context );
+//            mItems = objects;
+//            this.issueName = issueName;
+//        }
+
+        public ThumbAdapter( Context context, int resourceId, int textViewResourceId, List<String> objects ,int pdfId, String issueName, int imageId) {
+            super( context, resourceId, textViewResourceId, objects );
+            mInflater = LayoutInflater.from( context );
+            mResource = resourceId;
+            mTextResId = textViewResourceId;
+            mItems = objects;
+            this.issueName = issueName;
+            mPDFId = pdfId;
+            mImageId = imageId;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        @Override
+        public int getCount() {
+            return mItems.size();
+        }
+
+        @Override
+        public long getItemId( int position ) {
+            return getItem( position ).hashCode();
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return 3;
+        }
+
+        @Override
+        public int getItemViewType( int position ) {
+            return position%3;
+        }
+
+        @Override
+        public View getView( int position, View convertView, ViewGroup parent ) {
+
+//            PDFView pdfView=null;
+//            TextView textView = null;
+//
+//            if( null == convertView ) {
+//                convertView = mInflater.inflate( R.layout.thumbnail_view, parent, false );
+//                pdfView = (PDFView)convertView.findViewById(R.id.pdfView);
+//                textView = (TextView) convertView.findViewById( R.id.page );
+//            }
+//
+//            textView.setText( position);
+//            renderPDF(mItems.get(position), pdfView);
+
+//            ViewHolder viewHolder = null;
+//            if (convertView == null)
+//            {
+//                int layoutId = R.layout.thumbnail_view;
+//                convertView = mInflater.inflate(
+//                        layoutId, null);
+//                viewHolder = new ViewHolder();
+//                viewHolder.page = (TextView) convertView
+//                        .findViewById(R.id.page);
+//                //viewHolder.pdfView = (PDFView)convertView.findViewById(R.id.pdfView);
+//            }
+//            else
+//            {
+//                viewHolder = (ViewHolder) convertView.getTag();
+//            }
+//
+//            if (viewHolder != null)
+//            {
+//                viewHolder.page.setText(position);
+//                //renderPDF(mItems.get(position), viewHolder.pdfView);
+//            }
+//            ViewGroup.LayoutParams params = convertView.getLayoutParams();
+//            params.width = getResources().getDimensionPixelSize( R.dimen.thumb_item_size );
+//
+//
+//
+//            int type = getItemViewType( position );
+//
+//            ViewGroup.LayoutParams params = convertView.getLayoutParams();
+//            params.width = getResources().getDimensionPixelSize( R.dimen.thumb_item_size );
+
+            if( null == convertView ) {
+                convertView = mInflater.inflate( mResource, parent, false );
+            }
+
+            TextView textView = (TextView) convertView.findViewById( mTextResId );
+            PDFView pdfView = (PDFView) convertView.findViewById( mPDFId );
+            //ImageView imageView = (ImageView)convertView.findViewById( mImageId );
+            textView.setText("" + position);
+            renderPDF(mItems.get(position), pdfView);
+
+            if (pdfView.thumbPagePart != null) {
+                Bitmap bm = pdfView.thumbPagePart.getRenderedBitmap();
+                //imageView.setImageBitmap(bm);
+            }
+
+            int type = getItemViewType( position );
+
+            ViewGroup.LayoutParams params = convertView.getLayoutParams();
+            if( type == 0 ) {
+                params.width = getResources().getDimensionPixelSize(R.dimen.thumb_item_size);
+            } else if( type == 1 ) {
+                params.width = getResources().getDimensionPixelSize( R.dimen.thumb_item_size );
+            } else {
+                params.width = getResources().getDimensionPixelSize( R.dimen.thumb_item_size );
+            }
+
+            return convertView;
+        }
+        void renderPDF(String path, PDFView pdfView){
+            InputStream epubInputStream = null;
+            try {
+                epubInputStream = new FileInputStream(new File(path));
+                String lastPath = path.substring(path.lastIndexOf('/') + 1);
+                String savePath = Helper.getBookDirectory() + "/" + issueName + "/" + issueName + "/" + lastPath;
+                if (!Helper.fileExits(savePath)) {
+                    byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+
+                    FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                    BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                    bos.write(cis, 0, cis.length);
+                    bos.flush();
+                    bos.close();
+                }
+                //InputStream is = new ByteArrayInputStream(cis);
+                pdfView.fromFile(new File(savePath))
+                        .defaultPage(1)
+                        .load();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                //imageView.setImageResource(R.drawable.no_image_detail);
+            }
+        }
+
+        public class ViewHolder{
+            TextView page;
+            PDFView pdfView;
+        }
     }
 }
