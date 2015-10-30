@@ -2,8 +2,11 @@ package com.bookdose.confly;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -12,9 +15,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.bookdose.confly.EpubReader.EPubReaderActivity;
 import com.bookdose.confly.adapter.CategorylistAdapter;
@@ -43,6 +49,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     DownloadPagerFragment downloadFragment;
     ShelfFragment shelfFragment;
+    NewsFragment newsFragment;
     ImageButton editBtn;
     ImageButton bookBt;
     ImageButton docBt;
@@ -50,8 +57,16 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     ImageButton downloadMenu;
     ImageButton mylibraryMenu;
     ImageButton magBt;
+    ImageButton newsMenu;
+    ImageButton langBt;
+    ImageButton chooseTypeBt;
+    TextView activityText;
+    TextView languageText;
+    ProgressDialog progressBar;
 
     String result = "WAIT";
+    Category category;
+    String chooseType = Constant.ALL;
 
     boolean isEdit;
 
@@ -63,15 +78,25 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         if(Helper.isTablet(this))
             pushLibraryFragment();
         else
-            pushLibraryFragment();
+            pushDownloadFragment();
 
         downloadMenu = (ImageButton)findViewById(R.id.download_menu);
         mylibraryMenu = (ImageButton)findViewById(R.id.myshelf_menu);
+        mylibraryMenu = (ImageButton)findViewById(R.id.myshelf_menu);
+        newsMenu = (ImageButton)findViewById(R.id.news_menu);
         magBt = (ImageButton)findViewById(R.id.activity_btn_mag);
+        langBt = (ImageButton)findViewById(R.id.language_menu);
+        langBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPopoverLanguage(v);
+            }
+        });
+
         magBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPopoverCategory("3", v);
+                showPopoverCategory(Constant.MAGAZINE_ID, v);
             }
         });
 
@@ -79,7 +104,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         bookBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPopoverCategory("2", v);
+                showPopoverCategory(Constant.BOOK_ID, v);
             }
         });
 
@@ -87,7 +112,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         docBt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showPopoverCategory("4", v);
+                showPopoverCategory(Constant.DOCCUMENT_ID, v);
             }
         });
 
@@ -99,33 +124,48 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
+        activityText = (TextView)findViewById(R.id.activity_txt);
+        languageText = (TextView)findViewById(R.id.languageText);
+
         editBtn = (ImageButton)findViewById(R.id.editBtn);
         editBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 isEdit = !isEdit;
-                if (isEdit){
+                if (isEdit) {
                     editBtn.setImageResource(R.drawable.bin_active);
-                }else {
+                } else {
                     editBtn.setImageResource(R.drawable.bin_inactive);
                 }
 
                 shelfFragment.isEdit = isEdit;
-                shelfFragment.reloadData();
+                shelfFragment.reloadData(chooseType);
 
             }
         });
 
-        downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_inactive));
+        chooseTypeBt = (ImageButton)findViewById(R.id.activity_btn_type);
+        chooseTypeBt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showPopoverChooseType(v);
+            }
+        });
+
+        downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active));
 
         downloadMenu.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showContentMenu();
-                pushLibraryFragment();
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_inactive));
-                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_active));
+                if(Helper.isTablet(ConflyActivity.this))
+                    pushLibraryFragment();
+                else
+                    pushDownloadFragment();
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active));
+                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
+                newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
             }
         });
         mylibraryMenu.setOnClickListener(new View.OnClickListener() {
@@ -133,14 +173,30 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             public void onClick(View v) {
                 showShelfMenu();
                 pushMyshelfFragment();
-                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_inactive));
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_active));
+                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_active_mobile));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive));
+                newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
+            }
+        });
+        newsMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewsMenu();
+                pushNewsFragment();
+                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive));
+                newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_active_mobile));
             }
         });
 
         connectDatatBase();
         showContentMenu();
 
+        activityText.setText(Constant.MAGAZINE + " : ALL");
+        SharedPreferences prefs = this.getSharedPreferences(
+                "com.bookdose.confly", Context.MODE_PRIVATE);
+        String lang = prefs.getString(Constant.LANGUAGE_KEY, "All");
+        languageText.setText(lang);
     }
 
     @Override
@@ -186,8 +242,8 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             if(resultCode == Activity.RESULT_OK){
                 result = data.getStringExtra("result");
 
-                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.myshelf_inactive));
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.download_active));
+                mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_active_mobile));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive));
                 showShelfMenu();
 
             }
@@ -197,6 +253,85 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         }
     }//onActivityResult
 
+    void showPopoverChooseType(View view){
+        RelativeLayout rootView = (RelativeLayout)findViewById(R.id.mainview);
+
+        final PopoverView popoverView = new PopoverView(ConflyActivity.this, R.layout.popover_list_view);
+        popoverView.setContentSizeForViewInPopover(new Point(320, 320));
+        popoverView.setDelegate(ConflyActivity.this);
+        popoverView.showPopoverFromRectInViewGroup(rootView, PopoverView.getFrameForView(view), PopoverView.PopoverArrowDirectionUp, true);
+        ListView listView = (ListView)popoverView.findViewById(R.id.poplist);
+
+        final ArrayList<String> types = new ArrayList<String>();
+        types.add(Constant.ALL);
+        types.add(Constant.MAGAZINE);
+        types.add(Constant.BOOK);
+        types.add(Constant.DOCCUMENT);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, types);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+
+                activityText.setText("TYPE : "+types.get(position));
+                chooseType = types.get(position);
+                popoverView.dissmissPopover(true);
+                shelfFragment.reloadData(chooseType);
+
+//                SharedPreferences prefs = ConflyActivity.this.getSharedPreferences(
+//                        "com.bookdose.confly", Context.MODE_PRIVATE);
+//                prefs.edit().putString(Constant.LANGUAGE_KEY, types.get(position)).apply();
+
+            }
+
+        });
+    }
+
+    void showPopoverLanguage(View view){
+        //get root layout
+        RelativeLayout rootView = (RelativeLayout)findViewById(R.id.mainview);
+
+        final PopoverView popoverView = new PopoverView(ConflyActivity.this, R.layout.popover_list_view);
+        popoverView.setContentSizeForViewInPopover(new Point(320, 320));
+        popoverView.setDelegate(ConflyActivity.this);
+        popoverView.showPopoverFromRectInViewGroup(rootView, PopoverView.getFrameForView(view), PopoverView.PopoverArrowDirectionUp, true);
+        ListView listView = (ListView)popoverView.findViewById(R.id.poplist);
+
+        final ArrayList<String> languages = new ArrayList<String>();
+        languages.add("ALL");
+        languages.add("TH");
+        languages.add("EN");
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_1, languages);
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+
+                languageText.setText(languages.get(position));
+                popoverView.dissmissPopover(true);
+
+                SharedPreferences prefs = ConflyActivity.this.getSharedPreferences(
+                        "com.bookdose.confly", Context.MODE_PRIVATE);
+                prefs.edit().putString(Constant.LANGUAGE_KEY, languages.get(position)).apply();
+
+                if (category != null)
+                    downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+                else
+                    downloadFragment.loadProductList(Constant.ALL_ID,Constant.MAGAZINE_ID);
+            }
+
+        });
+
+    }
+
     void showPopoverCategory(String catID, View view){
         //get root layout
         RelativeLayout rootView = (RelativeLayout)findViewById(R.id.mainview);
@@ -204,11 +339,17 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         PopoverView popoverView = new PopoverView(ConflyActivity.this, R.layout.popover_list_view);
         popoverView.setContentSizeForViewInPopover(new Point(400, 480));
         popoverView.setDelegate(ConflyActivity.this);
-        popoverView.showPopoverFromRectInViewGroup(rootView, PopoverView.getFrameForView(view), PopoverView.PopoverArrowDirectionAny, true);
+        popoverView.showPopoverFromRectInViewGroup(rootView, PopoverView.getFrameForView(view), PopoverView.PopoverArrowDirectionUp, true);
         ListView listView = (ListView)popoverView.findViewById(R.id.poplist);
 
         ArrayList<Category> categories = new ArrayList<Category>();
         JSONArray response = ServiceRequest.requestCategoryListAPI(catID);
+        Category cat = new Category();
+        cat.category_name = Constant.ALL;
+        cat.category_aid = Constant.ALL_ID;
+        cat.product_main_aid = catID;
+        categories.add(cat);
+
         if (response != null){
             for (int loop=0; loop <response.length(); loop++){
                 try {
@@ -235,6 +376,15 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         downloadFragment.setDownloadFragmentListener(this);
         fragmentManager.beginTransaction()
                 .replace(R.id.contentPanel, downloadFragment)
+                .commit();
+    }
+
+    void pushNewsFragment(){
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        newsFragment = new NewsFragment();
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.contentPanel,newsFragment)
                 .commit();
     }
 
@@ -299,17 +449,50 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     }
 
     void showContentMenu(){
+        activityText.setText(Constant.MAGAZINE + " : ALL");
         docBt.setVisibility(View.VISIBLE);
         bookBt.setVisibility(View.VISIBLE);
         magBt.setVisibility(View.VISIBLE);
+        chooseTypeBt.setVisibility(View.INVISIBLE);
         editBtn.setVisibility(View.INVISIBLE);
+        langBt.setVisibility(View.VISIBLE);
+        languageText.setVisibility(View.VISIBLE);
+
+        if (isEdit) {
+            editBtn.setImageResource(R.drawable.bin_inactive);
+            isEdit = false;
+            shelfFragment.isEdit = isEdit;
+            shelfFragment.reloadData(chooseType);
+        }
     }
 
     void showShelfMenu(){
+        activityText.setText("TYPE : ALL");
+        docBt.setVisibility(View.GONE);
+        bookBt.setVisibility(View.GONE);
+        magBt.setVisibility(View.GONE);
+        chooseTypeBt.setVisibility(View.VISIBLE);
+        editBtn.setVisibility(View.VISIBLE);
+        langBt.setVisibility(View.INVISIBLE);
+        languageText.setVisibility(View.INVISIBLE);
+    }
+
+    void showNewsMenu(){
+        activityText.setText("NEWS");
+        chooseTypeBt.setVisibility(View.INVISIBLE);
         docBt.setVisibility(View.INVISIBLE);
         bookBt.setVisibility(View.INVISIBLE);
         magBt.setVisibility(View.INVISIBLE);
-        editBtn.setVisibility(View.VISIBLE);
+        editBtn.setVisibility(View.INVISIBLE);
+        langBt.setVisibility(View.INVISIBLE);
+        languageText.setVisibility(View.INVISIBLE);
+
+        if (isEdit) {
+            editBtn.setImageResource(R.drawable.bin_inactive);
+            isEdit = false;
+            shelfFragment.isEdit = isEdit;
+            shelfFragment.reloadData(chooseType);
+        }
     }
 
     @Override
@@ -344,7 +527,14 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     @Override
     public void onSelectCategory(Category category) {
+        if (category.product_main_aid.equals(Constant.MAGAZINE_ID))
+            activityText.setText(Constant.MAGAZINE+" : "+category.category_name);
+        else if (category.product_main_aid.equals(Constant.BOOK_ID))
+            activityText.setText(Constant.BOOK+" : "+category.category_name);
+        else if (category.product_main_aid.equals(Constant.DOCCUMENT_ID))
+            activityText.setText(Constant.DOCCUMENT+" : "+category.category_name);
         downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+        this.category = category;
     }
 
     @Override
@@ -378,7 +568,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         new DatabaseHandler(this).deleteIssue(issue);
         String issuePath = Helper.getBookDirectory()+"/"+issue.path;
         Helper.deleteDirectory(new File(issuePath));
-        shelfFragment.reloadData();
+        shelfFragment.reloadData(chooseType);
     }
 
     void openBook(Issue issue){
@@ -421,5 +611,15 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     public interface DownloadListener extends Serializable {
         void onDownloadCompleted(Issue issue);
+    }
+
+    void showLoading(){
+        progressBar = ProgressDialog.show(this, "", "Loading...");
+    }
+
+    void hideLoading(){
+        if (progressBar.isShowing()) {
+            progressBar.dismiss();
+        }
     }
 }

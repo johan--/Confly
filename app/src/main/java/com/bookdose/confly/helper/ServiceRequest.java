@@ -34,6 +34,7 @@ public class ServiceRequest {
     public static final String GET_PRODUCT_LIST = Constant.MAIN_URL+SERVICE+"get_product_list";
     public static final String GET_CATEGORY_LIST = Constant.MAIN_URL+SERVICE+"get_product_category_list";
     public static final String GET_FILE_CONFIG = Constant.MAIN_URL+SERVICE+"request_file";
+    public static final String GET_NEWS = Constant.MAIN_URL+SERVICE+"rss_feed";
     public static final String MYLIB_API = "";
     public static final String ISSUE_DETAIL_API = "";
 
@@ -47,14 +48,41 @@ public class ServiceRequest {
         return defaultValue;
     }
 
-    public static JSONArray requestProductListAPI(String catId, String productMainId){
+    public static JSONArray requestNewsListAPI(String language){
         JSONObject request = null;
         try {
             List<NameValuePair> params = defaultParam();
-            if (catId != null){
+            if (language != null && !language.equals("")){
+                params.add(new BasicNameValuePair("language",language));
+            }
+            request = new RequestTask(params).execute(GET_NEWS).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONArray("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONArray requestProductListAPI(String catId, String productMainId, String language){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("no_record", "9999"));
+            if (!language.equals("All"))
+                params.add(new BasicNameValuePair("language", language));
+            if (catId != null && !catId.equals(Constant.ALL_ID)){
                 params.add(new BasicNameValuePair("category_aid",catId));
                 params.add(new BasicNameValuePair("product_main_aid",productMainId));
-            }
+            }else if (catId.equals(Constant.ALL_ID))
+                params.add(new BasicNameValuePair("product_main_aid",productMainId));
             request = new RequestTask(params).execute(GET_PRODUCT_LIST).get();
             if (request == null)
                 return null;

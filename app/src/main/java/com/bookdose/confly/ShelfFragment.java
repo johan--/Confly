@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 
 import com.bookdose.confly.adapter.FragmentPageAdapter;
 import com.bookdose.confly.helper.DatabaseHandler;
+import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 
 import java.util.ArrayList;
@@ -46,14 +47,24 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
         this.shelfListenner = shelfListenner;
     }
 
-    public void reloadData(){
-        list = new DatabaseHandler(getActivity()).getAllIssue();
+    public void reloadData(String type){
+        if (type.equals(Constant.ALL))
+            list = new DatabaseHandler(getActivity()).getAllIssue();
+        else if (type.equals(Constant.MAGAZINE))
+            list = new DatabaseHandler(getActivity()).getIssueFromCategory(Constant.MAGAZINE_ID);
+        else if (type.equals(Constant.BOOK))
+            list = new DatabaseHandler(getActivity()).getIssueFromCategory(Constant.BOOK_ID);
+        else if (type.equals(Constant.DOCCUMENT))
+            list = new DatabaseHandler(getActivity()).getIssueFromCategory(Constant.DOCCUMENT_ID);
+
         mAdapter = new FragmentPageAdapter(getActivity().getSupportFragmentManager(), list, getResources());
         mAdapter.setPagerAdapterListener(this);
         mAdapter.isEdit = isEdit;
         mPager.setOffscreenPageLimit(4);
         mPager.removeAllViews();;
         mPager.setAdapter(mAdapter);
+
+        llDots.removeAllViews();
 
         for (int i = 0; i < mAdapter.getCount(); i++)
         {
@@ -104,7 +115,9 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
         mPager = (ViewPager) rootView.findViewById(R.id.viewPagger);
         llDots = (LinearLayout) rootView.findViewById(R.id.llDots);
 
-        reloadData();
+        isEdit = false;
+
+        reloadData(Constant.ALL);
 
         return rootView;
     }

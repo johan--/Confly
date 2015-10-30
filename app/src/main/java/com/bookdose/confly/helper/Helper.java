@@ -72,6 +72,7 @@ public class Helper {
     }
 
     public static String getBookDirectory(){
+        initMainDirectory();
         final File m_fileBook = new File(BOOKDOSE_MAIN_PATH + BOOKDOSE_PATH_ENDSWITH_BOOK);
         if (!m_fileBook.exists())
             m_fileBook.mkdirs();
@@ -133,7 +134,7 @@ public class Helper {
         }
 
         try {
-            bm.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            bm.compress(Bitmap.CompressFormat.PNG, 100, fOut);
             fOut.flush();
             fOut.close();
         } catch (Exception e) {

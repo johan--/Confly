@@ -70,10 +70,11 @@
                 android:padding="8dp"
                 android:layout_marginRight="10dp"
                 android:gravity="center"
-                >
+                android:background="#0fff">
                 <ImageView
                     android:id="@+id/coverImage"
                     android:layout_width="wrap_content"
+                    android:background="#0fff"
                     android:layout_height="wrap_content" />
             </LinearLayout>
             <LinearLayout

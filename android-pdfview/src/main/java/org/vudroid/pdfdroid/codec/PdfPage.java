@@ -1,9 +1,13 @@
 package org.vudroid.pdfdroid.codec;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 
 import org.vudroid.core.codec.CodecPage;
 
@@ -98,7 +102,22 @@ public class PdfPage implements CodecPage
         int height = viewbox.height();
         int[] bufferarray = new int[width * height];
         nativeCreateView(docHandle, pageHandle, mRect, matrixArray, bufferarray);
-        return Bitmap.createBitmap(bufferarray, width, height, Bitmap.Config.RGB_565);
+        try {
+            return Bitmap.createBitmap(bufferarray, width, height, Bitmap.Config.RGB_565);
+        }catch (OutOfMemoryError e){
+            e.printStackTrace();
+            Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(b);
+            Paint paint = new Paint();
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(10);
+            canvas.drawPaint(paint);
+            //canvas.drawText("Loading", x, y, paint);
+            canvas.drawARGB(1,255,255,255);
+            Log.d("thumb", "width = " + b.getWidth());
+            return b;
+        }
+
         /*ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 2);
         render(docHandle, docHandle, mRect, matrixArray, buffer, ByteBuffer.allocateDirect(width * height * 8));
         final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);

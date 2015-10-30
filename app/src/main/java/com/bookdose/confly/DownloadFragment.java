@@ -1,6 +1,8 @@
 package com.bookdose.confly;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,6 +13,7 @@ import android.widget.AdapterView;
 
 import com.bookdose.confly.adapter.DownloadAdapter;
 import com.bookdose.confly.helper.ServiceRequest;
+import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 
 import org.json.JSONArray;
@@ -100,7 +103,10 @@ public class DownloadFragment extends Fragment implements AbsListView.OnItemClic
 
     public void loadProductList(String catId, String productMainId){
         listData = new ArrayList<>();
-        JSONArray datas = ServiceRequest.requestProductListAPI(catId, productMainId);
+        SharedPreferences prefs = getActivity().getSharedPreferences(
+                "com.bookdose.confly", Context.MODE_PRIVATE);
+        String lang = prefs.getString(Constant.LANGUAGE_KEY, "All");
+        JSONArray datas = ServiceRequest.requestProductListAPI(catId, productMainId, lang);
         for (int i=0; i<datas.length(); i++){
             try {
                 JSONObject obj = datas.getJSONObject(i);

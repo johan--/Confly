@@ -22,8 +22,15 @@ public class Constant {
     public static final String COMPLETE_STATUS = "COMPLETE";
     public static final String FAIL_STATUS = "FAIL";
 
-/*    #define     AES_KEY             @"DqaUCZS4evTy8EGcM2Hj5wPs6z7pRJkW"
-            #define     AES_IV              @"RZCvtu5yhMWwQSIL"
-            #define     PDF_PASSWORD        @"vojglyi5PEHgILmFUhGIeGGsMlQFhQc4"
-            */
+    public static final String MAGAZINE_ID = "3";
+    public static final String BOOK_ID = "2";
+    public static final String DOCCUMENT_ID = "4";
+    public static final String ALL_ID = "-1";
+
+    public static final String MAGAZINE = "MAGAZINE";
+    public static final String BOOK = "BOOK";
+    public static final String DOCCUMENT = "DOCCUMENT";
+    public static final String ALL = "All";
+
+    public static final String LANGUAGE_KEY = "LANGUAGE_KEY";
 }

@@ -291,6 +291,47 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         return issues;
     }
 
+    // Getting All Contacts
+    public ArrayList<Issue> getIssueFromCategory(String catID) {
+        ArrayList<Issue> issues = new ArrayList<Issue>();
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_ISSUE+" WHERE "+CATEGORY_ID+"="+catID;
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Issue issue = new Issue();
+                issue.content_aid = cursor.getString(cursor.getColumnIndex(CONTENT_ID));
+                issue.content_name = cursor.getString(cursor.getColumnIndex(CONTENT_NAME));
+                issue.content_type = cursor.getString(cursor.getColumnIndex(CONTENT_TYPE));
+                issue.category_aid = cursor.getString(cursor.getColumnIndex(CATEGORY_ID));
+                issue.category_name = cursor.getString(cursor.getColumnIndex(CATEGORY_NAME));
+                issue.author = cursor.getString(cursor.getColumnIndex(AUTHOR));
+                issue.publish_month = cursor.getString(cursor.getColumnIndex(PUBLISH_MONTH));
+                issue.issue_aid = cursor.getString(cursor.getColumnIndex(ISSUE_ID));
+                issue.vol = cursor.getString(cursor.getColumnIndex(VOL));
+                issue.issue = cursor.getString(cursor.getColumnIndex(ISSUE));
+                issue.issue_else = cursor.getString(cursor.getColumnIndex(ISSUE_ELSE));
+                issue.description = cursor.getString(cursor.getColumnIndex(DESCRIPTION));
+                issue.publish_date = cursor.getString(cursor.getColumnIndex(PUBLISH_DATE));
+                issue.is_generate_content = cursor.getString(cursor.getColumnIndex(IS_GENERATE_CONTENT));
+                issue.have_file = cursor.getString(cursor.getColumnIndex(HAVE_FILE));
+                issue.path = cursor.getString(cursor.getColumnIndex(PATH));
+                issue.full_path = cursor.getString(cursor.getColumnIndex(FULL_PATH));
+                issue.cover_image = cursor.getString(cursor.getColumnIndex(COVER_IMAGE));
+                issue.status = cursor.getString(cursor.getColumnIndex(STATUS));
+                // Adding contact to list
+                issues.add(issue);
+            } while (cursor.moveToNext());
+        }
+        db.close();
+        // return contact list
+        return issues;
+    }
+
     public String getIssueStatus(String path){
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT "+STATUS+" FROM " + TABLE_ISSUE+" WHERE "+PATH+"="+path;

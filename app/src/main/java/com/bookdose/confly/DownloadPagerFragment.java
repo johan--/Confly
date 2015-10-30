@@ -1,5 +1,8 @@
 package com.bookdose.confly;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -13,6 +16,7 @@ import android.widget.LinearLayout;
 
 import com.bookdose.confly.adapter.FragmentPageAdapter;
 import com.bookdose.confly.helper.ServiceRequest;
+import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 
 import org.json.JSONArray;
@@ -31,6 +35,7 @@ public class DownloadPagerFragment extends Fragment implements View.OnClickListe
 
     FragmentPageAdapter mAdapter;
     ViewPager mPager;
+    ProgressDialog progressBar;
 
     ArrayList<Issue> list = new ArrayList<Issue>();
 
@@ -84,7 +89,7 @@ public class DownloadPagerFragment extends Fragment implements View.OnClickListe
 
         llDots = (LinearLayout) rootView.findViewById(R.id.llDots);
 
-        loadProductList("","");
+        loadProductList(Constant.ALL_ID,Constant.MAGAZINE_ID);
 
 //        mAdapter = new FragmentPageAdapter(getActivity().getSupportFragmentManager(), list, getResources());
 //        mAdapter.setPagerAdapterListener(this);
@@ -138,15 +143,21 @@ public class DownloadPagerFragment extends Fragment implements View.OnClickListe
     }
 
     public void loadProductList(String catId, String productMainId){
+        showLoading();
         list = new ArrayList<>();
-        JSONArray datas = ServiceRequest.requestProductListAPI(catId,productMainId);
-        for (int i=0; i<datas.length(); i++){
-            try {
-                JSONObject obj = datas.getJSONObject(i);
-                Issue issue = new Issue(obj);
-                list.add(issue);
-            } catch (JSONException e) {
-                e.printStackTrace();
+        SharedPreferences prefs = getActivity().getSharedPreferences(
+                "com.bookdose.confly", Context.MODE_PRIVATE);
+        String lang = prefs.getString(Constant.LANGUAGE_KEY, "All");
+        JSONArray datas = ServiceRequest.requestProductListAPI(catId,productMainId,lang);
+        if (datas != null){
+            for (int i=0; i<datas.length(); i++){
+                try {
+                    JSONObject obj = datas.getJSONObject(i);
+                    Issue issue = new Issue(obj);
+                    list.add(issue);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -170,11 +181,22 @@ public class DownloadPagerFragment extends Fragment implements View.OnClickListe
             imgDot.setOnClickListener(this);
             llDots.addView(imgDot);
         }
+        hideLoading();
     }
 
     @Override
     public void didSelectedBook(Issue issue) {
         if (downloadPagerListener != null)
             downloadPagerListener.didSelectedBook(issue);
+    }
+
+    void showLoading(){
+        progressBar = ProgressDialog.show(getActivity(), "", "Loading...");
+    }
+
+    void hideLoading(){
+        if (progressBar.isShowing()) {
+            progressBar.dismiss();
+        }
     }
 }
