@@ -261,5 +261,10 @@ public class TouchImageView extends ImageView {
 
             return true;
         }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            return super.onSingleTapUp(e);
+        }
     }
 }

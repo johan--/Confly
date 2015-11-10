@@ -2,6 +2,10 @@ package com.bookdose.confly;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
@@ -80,6 +84,22 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
         mPager.setOffscreenPageLimit(2);
         mPager.addOnPageChangeListener(this);
         mPager.setOnPageChangeListener(this);
+        mPager.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isShowToolbar){
+                    showToolBar();
+                    isShowToolbar = true;
+                }else {
+                    hiddenToolbar();
+                    if (isShowBookmark) {
+                        hideBookmarkBar();
+                        isShowBookmark = false;
+                    }
+                    isShowToolbar = false;
+                }
+            }
+        });
         mPager.setAdapter(adapter);
 
         backImage = (ImageButton)findViewById(R.id.backImage);
@@ -169,7 +189,7 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
         anim.setAnimationListener(new Animation.AnimationListener() {
             public void onAnimationStart(Animation animation) {
                 topToolbar.setVisibility(View.VISIBLE);
-                generateThumbnail();
+                //generateThumbnail();
             }
 
             public void onAnimationRepeat(Animation animation) {
@@ -274,30 +294,79 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
 
     void generateThumbnail(){
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.linear);
+        final LinearLayout layout = (LinearLayout) findViewById(R.id.linear);
         thumbList = JsonHelper.getThumbnails(issue);
         for (int i = 0; i < thumbList.size(); i++) {
             final ImageView imageView = new ImageView(this);
             imageView.setId(i);
             imageView.setPadding(10, 5, 10, 5);
-            Bitmap bm = null;
-            bm = Helper.bitmapWithPath(thumbList.get(i));
-            imageView.setImageBitmap(bm);
+
+//            Bitmap bm = Helper.bitmapWithPath(thumbList.get(i));
+//            imageView.setImageBitmap(bm);
             imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
             imageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mPager.setCurrentItem(imageView.getId());
-                }
-            });
-            layout.addView(imageView);
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //PDFView pdfView = new PDFView(getApplicationContext(),null);
+            @Override
+            public void onClick(View v) {
+                mPager.setCurrentItem(imageView.getId());
+            }});
+            layout.addView(imageView,i);
+            //layout.addView(imageView);
+        try {
+            Thread.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
+        }
+        new AsyncTask<Void,Void,Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                for (int i = 0; i < thumbList.size(); i++) {
+                    String path = thumbList.get(i);
+                    if (Helper.fileExits(path)){
+                        final int finalI = i;
+                        final Bitmap bm = Helper.decodeThumbFile(new File(path));
+                        ImageReaderActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ImageView imageView = (ImageView)layout.getChildAt(finalI);
+                                imageView.setImageBitmap(bm);
+                            }
+                        });
+                    }else {
+                        try {
+                            final Bitmap b = Bitmap.createBitmap(120, 150, Bitmap.Config.ARGB_4444);
+                            b.eraseColor(0);
+                            Canvas canvas = new Canvas(b);
+                            Paint paint = new Paint();
+                            paint.setColor(Color.WHITE);
+                            //paint.setTextSize(10);
+                            canvas.drawPaint(paint);
+                            //canvas.drawText("Loading", x, y, paint);
+                            //canvas.drawARGB(1,0,0,0);
+                            final int finalI = i;
+                            ImageReaderActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ImageView imageView = (ImageView)layout.getChildAt(finalI);
+                                    imageView.setImageBitmap(b);
+                                }
+                            });
+                        }catch (OutOfMemoryError e){
+
+                        }
+
+                    }
+
+
+                }
+
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            //PDFView pdfView = new PDFView(getApplicationContext(),null)
 
 //        thumbList = JsonHelper.getThumbnails(issue);
 //        //ThumbAdapter thumbAdapter = new ThumbAdapter(this,thumbList, issue.path);
@@ -331,6 +400,8 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
     public void onSelectBookmark(Bookmark bookmark) {
         mPager.setCurrentItem(bookmark.page);
     }
+
+
 
     class ThumbAdapter extends ArrayAdapter<String> {
 
@@ -440,10 +511,10 @@ public class ImageReaderActivity extends FragmentActivity implements ImageReader
             textView.setText("" + position);
             renderPDF(mItems.get(position), pdfView);
 
-            if (pdfView.thumbPagePart != null) {
-                Bitmap bm = pdfView.thumbPagePart.getRenderedBitmap();
-                //imageView.setImageBitmap(bm);
-            }
+//            if (pdfView.thumbPagePart != null) {
+//                Bitmap bm = pdfView.thumbPagePart.getRenderedBitmap();
+//                //imageView.setImageBitmap(bm);
+//            }
 
             int type = getItemViewType( position );
 

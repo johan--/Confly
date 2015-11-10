@@ -33,4 +33,11 @@ public class Constant {
     public static final String ALL = "All";
 
     public static final String LANGUAGE_KEY = "LANGUAGE_KEY";
+    public static final String TOKEN_KEY = "TOKEN_KEY";
+    public static final String USERID_KEY = "USERID_KEY";
+    public static final String REMAIN_KEY = "REMAIN_KEY";
+    public static final String EXPIRE_KEY = "EXPIRE_KEY";
+    public static final String USER_KEY = "USER_KEY";
+    public static final String PASS_KEY = "PASS_KEY";
+    public static final String ACTIVATE_TIME_KEY = "ACTIVATE_TIME_KEY";
 }

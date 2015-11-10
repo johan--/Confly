@@ -103,7 +103,8 @@
         android:background="#3111"
         android:layout_below="@+id/top_toolbar"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true">
+        android:layout_alignParentEnd="true"
+        android:visibility="invisible">
         <Button
             android:id="@+id/markBtn"
             android:text="Add Bookmark"

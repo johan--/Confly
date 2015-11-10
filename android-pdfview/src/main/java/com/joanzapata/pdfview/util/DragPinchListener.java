@@ -104,6 +104,18 @@ public class DragPinchListener implements OnTouchListener {
 
     }
 
+    /** Implement this interface to receive Double Tap events */
+    public interface OnTapListener {
+
+        /**
+         * Called when a double tap happens.
+         * @param x X-offset of event.
+         * @param y Y-offset of event.
+         */
+        void onTap(float x, float y);
+
+    }
+
     enum State {NONE, ZOOM, DRAG}
 
     private State state = State.NONE;
@@ -119,6 +131,8 @@ public class DragPinchListener implements OnTouchListener {
     private OnPinchListener onPinchListener;
 
     private OnDoubleTapListener onDoubleTapListener;
+
+    private OnTapListener onTapListener;
 
     private float lastDownX, lastDownY;
 
@@ -166,10 +180,14 @@ public class DragPinchListener implements OnTouchListener {
                             onDoubleTapListener.onDoubleTap(event.getX(), event.getY());
                             lastClickTime = 0;
                         } else {
+                            if (onTapListener != null)
+                                onTapListener.onTap(event.getX(), event.getY());
                             lastClickTime = System.currentTimeMillis();
                             handlerClick.postDelayed(runnableClick, MAX_CLICK_TIME);
                         }
                     } else {
+                        if (onTapListener != null)
+                            onTapListener.onTap(event.getX(), event.getY());
                         handlerClick.postDelayed(runnableClick,0);
                     }
                 }
@@ -292,4 +310,7 @@ public class DragPinchListener implements OnTouchListener {
         this.onDoubleTapListener = onDoubleTapListener;
     }
 
+    public void setOnTapListener(OnTapListener onTapListener) {
+        this.onTapListener = onTapListener;
+    }
 }

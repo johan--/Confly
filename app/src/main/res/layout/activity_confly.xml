@@ -249,14 +249,15 @@
                     android:src="@drawable/news_inactive_mobile"
                     android:layout_gravity="right|center_vertical"
                     android:paddingRight="10dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:scaleType="fitXY"/>
                 <View
                     android:layout_width="2dp"
                     android:layout_height="match_parent"
                     android:background="#fff"
                     android:layout_marginTop="0dp"
 
-                    />
+                    android:layout_marginRight="20dp" />
                 <ImageButton
                     android:id="@+id/download_menu"
                     android:layout_width="wrap_content"
@@ -264,8 +265,6 @@
                     android:background="#0fff"
                     android:src="@drawable/content_active"
                     android:layout_gravity="center|center_vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingRight="10dp"
                     android:layout_weight="1"
                     android:scaleType="fitXY" />
                 <View
@@ -273,7 +272,8 @@
                     android:layout_height="match_parent"
                     android:background="#fff"
                     android:layout_marginTop="0dp"
-                    />
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="20dp" />
                 <ImageButton
                     android:id="@+id/myshelf_menu"
                     android:layout_width="wrap_content"
@@ -282,7 +282,8 @@
                     android:src="@drawable/shelft_inactive_mobile"
                     android:layout_gravity="left|center_vertical"
                     android:paddingLeft="10dp"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:scaleType="fitXY" />
             </LinearLayout>
 
         </FrameLayout>

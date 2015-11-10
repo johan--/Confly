@@ -39,7 +39,7 @@ import java.net.URL;
  * Use the {@link ImageReaderFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ImageReaderFragment extends Fragment implements TouchImageView.TouchImageListener{
+public class ImageReaderFragment extends Fragment implements TouchImageView.TouchImageListener, PDFView.OnTapPDFView {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_FILE_PATH = "file_path";
@@ -65,6 +65,12 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
 
     public ImageReaderFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void tapPdfView() {
+        if (imageReaderListener != null)
+            imageReaderListener.didDoubleTapImageReader();
     }
 
     public interface ImageReaderListener{
@@ -110,8 +116,17 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
 //        }
 
         pdfView = (PDFView)rootView.findViewById(R.id.pdfView);
+        pdfView.setOnTapPDFView(this);
+
         if (Helper.fileExits(path)){
-            renderPDF();
+            //renderPDF();
+            String lastPath = path.substring(path.lastIndexOf('/') + 1);
+            String savePath = Helper.getBookDirectory() + "/" + contentName + "/" + contentName + "/" + lastPath;
+            pdfView.fromFile(new File(savePath))
+                    .defaultPage(1)
+                    .load();
+            progressBar.setVisibility(View.INVISIBLE);
+            //new RenderTask().execute();
         }else {
             //imageView.setImageResource(R.drawable.no_image_detail);
 //            String status = new DatabaseHandler(getActivity()).getIssueStatus(contentName);
@@ -120,7 +135,6 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
                     downloade(filePath);
         }
         return rootView;
-        //String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+"";
     }
 
     // Decodes image and scales it to reduce memory consumption
@@ -167,28 +181,80 @@ public class ImageReaderFragment extends Fragment implements TouchImageView.Touc
     }*/
 
     void renderPDF(){
-        InputStream epubInputStream = null;
-        try {
-            epubInputStream = new FileInputStream(new File(path));
+//        InputStream epubInputStream = null;
+//        try {
+//            epubInputStream = new FileInputStream(new File(path));
+//            String lastPath = path.substring(path.lastIndexOf('/') + 1);
+//            String savePath = Helper.getBookDirectory() + "/" + contentName + "/" + contentName + "/" + lastPath;
+//            if (!Helper.fileExits(savePath)) {
+//                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+//
+//                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+//                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+//                bos.write(cis, 0, cis.length);
+//                bos.flush();
+//                bos.close();
+//            }
+//            Thread.sleep(5);
+//            //InputStream is = new ByteArrayInputStream(cis);
+//            pdfView.fromFile(new File(savePath))
+//                    .defaultPage(1)
+//                    .load();
+//            progressBar.setVisibility(View.INVISIBLE);
+//        }catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }catch (RuntimeException e){
+//            e.printStackTrace();
+//        }catch (IOException e){
+//            e.printStackTrace();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    private class RenderTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            renderPDF();
+            InputStream epubInputStream = null;
+            try {
+                epubInputStream = new FileInputStream(new File(path));
+                String lastPath = path.substring(path.lastIndexOf('/') + 1);
+                String savePath = Helper.getBookDirectory() + "/" + contentName + "/" + contentName + "/" + lastPath;
+                if (!Helper.fileExits(savePath)) {
+                    byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+
+                    FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                    BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                    bos.write(cis, 0, cis.length);
+                    bos.flush();
+                    bos.close();
+                }
+                Thread.sleep(5);
+                //InputStream is = new ByteArrayInputStream(cis);
+
+            }catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }catch (RuntimeException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
             String lastPath = path.substring(path.lastIndexOf('/') + 1);
             String savePath = Helper.getBookDirectory() + "/" + contentName + "/" + contentName + "/" + lastPath;
-            if (!Helper.fileExits(savePath)) {
-                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
-
-                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
-                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                bos.write(cis, 0, cis.length);
-                bos.flush();
-                bos.close();
-            }
-            //InputStream is = new ByteArrayInputStream(cis);
             pdfView.fromFile(new File(savePath))
                     .defaultPage(1)
                     .load();
             progressBar.setVisibility(View.INVISIBLE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            //imageView.setImageResource(R.drawable.no_image_detail);
         }
     }
 

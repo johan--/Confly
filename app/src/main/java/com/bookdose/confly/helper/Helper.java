@@ -30,6 +30,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Created by Teebio on 8/27/15 AD.
@@ -454,5 +457,20 @@ public class Helper {
 //            Log.d("thumb", "width = " + b.getWidth());
             return null;
         }
+    }
+
+    public static String md5ToHexString(String string) throws NoSuchAlgorithmException, UnsupportedEncodingException
+    {
+        byte[] hash;
+        hash = MessageDigest.getInstance("MD5").digest(string.getBytes("UTF-8"));
+        StringBuilder hex = new StringBuilder(hash.length * 2);
+
+        for (byte b : hash) {
+            int i = (b & 0xFF);
+            if (i < 0x10) hex.append('0');
+            hex.append(Integer.toHexString(i));
+        }
+
+        return hex.toString();
     }
 }

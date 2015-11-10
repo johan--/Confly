@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.bookdose.confly.adapter.NewDetailAdapter;
 import com.bookdose.confly.adapter.NewsAdapter;
+import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.News;
 
@@ -186,7 +187,7 @@ public class NewsFragment extends Fragment implements NewsAdapter.NewsListener, 
 
     void loadRss(String lang){
         showLoading();
-        JSONArray rss = ServiceRequest.requestNewsListAPI(lang);
+        JSONArray rss = ServiceRequest.requestNewsListAPI(lang, Helper.findDeviceID(getActivity()));
         if (rss!=null){
             news.clear();
             for (int i = 0;i < rss.length(); i++){

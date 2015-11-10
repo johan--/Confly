@@ -12,6 +12,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 
 import com.bookdose.confly.adapter.DownloadAdapter;
+import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
@@ -75,7 +76,7 @@ public class DownloadFragment extends Fragment implements AbsListView.OnItemClic
 
         // Set the adapter
         mListView = (AbsListView) view.findViewById(android.R.id.list);
-        loadProductList("","");
+        loadProductList(Constant.ALL_ID,Constant.MAGAZINE_ID);
         //((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
         // Set OnItemClickListener so we can be notified on item clicks
@@ -106,18 +107,20 @@ public class DownloadFragment extends Fragment implements AbsListView.OnItemClic
         SharedPreferences prefs = getActivity().getSharedPreferences(
                 "com.bookdose.confly", Context.MODE_PRIVATE);
         String lang = prefs.getString(Constant.LANGUAGE_KEY, "All");
-        JSONArray datas = ServiceRequest.requestProductListAPI(catId, productMainId, lang);
-        for (int i=0; i<datas.length(); i++){
-            try {
-                JSONObject obj = datas.getJSONObject(i);
-                Issue issue = new Issue(obj);
-                listData.add(issue);
-            } catch (JSONException e) {
-                e.printStackTrace();
+        String token = prefs.getString(Constant.TOKEN_KEY,null);
+        JSONArray datas = ServiceRequest.requestProductListAPI(catId, productMainId, lang, Helper.findDeviceID(getActivity()),token);
+        if (datas != null){
+            for (int i=0; i<datas.length(); i++){
+                try {
+                    JSONObject obj = datas.getJSONObject(i);
+                    Issue issue = new Issue(obj);
+                    listData.add(issue);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+            mAdapter = new DownloadAdapter(getActivity(),R.layout.list_issue_item,listData);
+            mListView.setAdapter(mAdapter);
         }
-        mAdapter = new DownloadAdapter(getActivity(),R.layout.list_issue_item,listData);
-        mListView.setAdapter(mAdapter);
     }
-
 }

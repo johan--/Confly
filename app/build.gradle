@@ -25,6 +25,8 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:4.6.0'
     compile project(':android-pdfview')
     compile project(':hlist')
+    compile files('libs/skyepub.jar')
+    //compile 'com.joanzapata.pdfview:android-pdfview:1.0.4@aar'
     provided 'com.googlecode.androidannotations:androidannotations:2.7.1'
     compile 'com.googlecode.androidannotations:androidannotations-api:2.7.1'
     compile files('libs/epublib-core-latest.jar')

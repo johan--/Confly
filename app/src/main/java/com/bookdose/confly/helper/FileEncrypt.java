@@ -56,7 +56,7 @@ public class FileEncrypt {
     public static byte[] decrypt_data(InputStream inputStream){
         try
         {
-            SecretKeySpec keySpec = new SecretKeySpec(Constant.AES_KEY.getBytes(), USE_CIPHER_TRANSFORMATION);
+            //SecretKeySpec keySpec = new SecretKeySpec(Constant.AES_KEY.getBytes(), USE_CIPHER_TRANSFORMATION);
 
             byte[] data = getBytesFromInputStream(inputStream);
 

@@ -34,6 +34,9 @@ public class ServiceRequest {
     public static final String GET_PRODUCT_LIST = Constant.MAIN_URL+SERVICE+"get_product_list";
     public static final String GET_CATEGORY_LIST = Constant.MAIN_URL+SERVICE+"get_product_category_list";
     public static final String GET_FILE_CONFIG = Constant.MAIN_URL+SERVICE+"request_file";
+    public static final String GET_FILE_LOGIN = Constant.MAIN_URL+SERVICE+"request_login";
+    public static final String GET_FILE_LOGOUT = Constant.MAIN_URL+SERVICE+"logout";
+    public static final String GET_LOGIN = Constant.MAIN_URL+SERVICE+"login";
     public static final String GET_NEWS = Constant.MAIN_URL+SERVICE+"rss_feed";
     public static final String MYLIB_API = "";
     public static final String ISSUE_DETAIL_API = "";
@@ -42,16 +45,17 @@ public class ServiceRequest {
         List<NameValuePair> defaultValue = new ArrayList<NameValuePair>();
         defaultValue.add(new BasicNameValuePair("device", Constant.DEVICE));
         defaultValue.add(new BasicNameValuePair("appname", Constant.APP_NAME));
-        defaultValue.add(new BasicNameValuePair("device_id", "123456"));
+        //defaultValue.add(new BasicNameValuePair("device_id", Helper.findDeviceID()));
         defaultValue.add(new BasicNameValuePair("version", Constant.VERSION));
         //defaultValue.add(new BasicNameValuePair("is_image", "0"));
         return defaultValue;
     }
 
-    public static JSONArray requestNewsListAPI(String language){
+    public static JSONArray requestNewsListAPI(String language, String device_id){
         JSONObject request = null;
         try {
             List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("device_id", device_id));
             if (language != null && !language.equals("")){
                 params.add(new BasicNameValuePair("language",language));
             }
@@ -71,11 +75,15 @@ public class ServiceRequest {
         return null;
     }
 
-    public static JSONArray requestProductListAPI(String catId, String productMainId, String language){
+    public static JSONArray requestProductListAPI(String catId, String productMainId, String language, String device_id, String token){
         JSONObject request = null;
         try {
             List<NameValuePair> params = defaultParam();
             params.add(new BasicNameValuePair("no_record", "9999"));
+            params.add(new BasicNameValuePair("device_id", device_id));
+            if (token != null)
+                params.add(new BasicNameValuePair("token", token));
+
             if (!language.equals("All"))
                 params.add(new BasicNameValuePair("language", language));
             if (catId != null && !catId.equals(Constant.ALL_ID)){
@@ -99,11 +107,12 @@ public class ServiceRequest {
         return null;
     }
 
-    public static JSONArray requestCategoryListAPI(String productMainId){
+    public static JSONArray requestCategoryListAPI(String productMainId, String device_id){
         JSONObject request = null;
         try {
             List<NameValuePair> params = defaultParam();
             params.add(new BasicNameValuePair("product_main_aid", productMainId));
+            params.add(new BasicNameValuePair("device_id", device_id));
             //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
             request = new RequestTask(params).execute(GET_CATEGORY_LIST).get();
             if (request == null)
@@ -121,11 +130,12 @@ public class ServiceRequest {
         return null;
     }
 
-    public static JSONObject requestConfigFileAPI(String issueId){
+    public static JSONObject requestConfigFileAPI(String issueId, String device_id){
         JSONObject request = null;
         try {
             List<NameValuePair> params = defaultParam();
             params.add(new BasicNameValuePair("issue_id", issueId));
+            params.add(new BasicNameValuePair("device_id", device_id));
             //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
             request = new RequestTask(params).execute(GET_FILE_CONFIG).get();
             if (request == null)
@@ -159,6 +169,77 @@ public class ServiceRequest {
         }
         try {
             return request.getJSONArray("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject requestLoginAPI(String username, String password, String device_id){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("username", username));
+            params.add(new BasicNameValuePair("password", password));
+            params.add(new BasicNameValuePair("device_id", device_id));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_FILE_LOGIN).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONObject("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String requestLogoutAPI(String token, String device_id){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("token", token));
+            params.add(new BasicNameValuePair("device_id", device_id));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_FILE_LOGOUT).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getString("result");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject loginAPI(String token, String password, String device_id){
+        JSONObject request = null;
+        try {
+            List<NameValuePair> params = defaultParam();
+            params.add(new BasicNameValuePair("login_token", token));
+            params.add(new BasicNameValuePair("password", password));
+            params.add(new BasicNameValuePair("device_id", device_id));
+            //RequestTask requestTask = new RequestTask(GET_CATEGORY_LIST,params);
+            request = new RequestTask(params).execute(GET_LOGIN).get();
+            if (request == null)
+                return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        try {
+            return request.getJSONObject("result");
         } catch (JSONException e) {
             e.printStackTrace();
         }

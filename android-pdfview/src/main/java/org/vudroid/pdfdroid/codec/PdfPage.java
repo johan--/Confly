@@ -49,12 +49,12 @@ public class PdfPage implements CodecPage
         Matrix matrix = new Matrix();
         matrix.postScale(width / getMediaBox().width(), -height / getMediaBox().height());
         matrix.postTranslate(0, height);
-        matrix.postTranslate(-pageSliceBounds.left*width, -pageSliceBounds.top*height);
-        matrix.postScale(1/pageSliceBounds.width(), 1/pageSliceBounds.height());
+        matrix.postTranslate(-pageSliceBounds.left * width, -pageSliceBounds.top * height);
+        matrix.postScale(1 / pageSliceBounds.width(), 1 / pageSliceBounds.height());
         return render(new Rect(0,0,width,height), matrix);
     }
 
-    static PdfPage createPage(long dochandle, int pageno)
+    static synchronized PdfPage createPage(long dochandle, int pageno)
     {
         return new PdfPage(open(dochandle, pageno), dochandle);
     }
@@ -106,7 +106,7 @@ public class PdfPage implements CodecPage
             return Bitmap.createBitmap(bufferarray, width, height, Bitmap.Config.RGB_565);
         }catch (OutOfMemoryError e){
             e.printStackTrace();
-            Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Bitmap b = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(b);
             Paint paint = new Paint();
             paint.setColor(Color.WHITE);

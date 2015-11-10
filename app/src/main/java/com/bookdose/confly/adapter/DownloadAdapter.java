@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bookdose.confly.R;
+import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -110,8 +111,22 @@ public class DownloadAdapter extends ArrayAdapter<Issue> {
         Issue issue = getItem(position);
 
         if (issue != null) {
-            placeHolder.bookName.setText(issue.content_name);
-            placeHolder.bookDetail.setText(issue.description);
+            String bookname = issue.content_name;
+            if(issue.category_aid.equals(Constant.MAGAZINE_ID) || issue.category_aid.equals("1")){
+                if (!issue.issue_else.equals(""))
+                    bookname = issue.content_name+"\n"+issue.issue_else;
+                else if (!issue.vol.equals("0") && !issue.issue.equals("0"))
+                    bookname = issue.content_name+"\nvol : "+issue.vol+" issue : "+issue.issue;
+                else if (!issue.vol.equals("0") && issue.issue.equals("0"))
+                    bookname = issue.content_name+"\nvol : "+issue.vol;
+                else if (issue.vol.equals("0") && !issue.issue.equals("0"))
+                    bookname = issue.content_name+"\nissue : "+issue.issue;
+                else if (issue.vol.equals("0") && issue.issue.equals("0"))
+                    bookname = issue.content_name;
+            }
+
+            placeHolder.bookName.setText(bookname);
+            //placeHolder.bookDetail.setText(issue.description);
             ImageLoader imageLoader = ImageLoader.getInstance(); // Get singleton instance
             imageLoader.init(ImageLoaderConfiguration.createDefault(getContext()));
             imageLoader.displayImage(issue.getLargeCoverUrl(), placeHolder.coverImage);

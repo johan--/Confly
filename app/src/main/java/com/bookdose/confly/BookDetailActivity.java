@@ -203,7 +203,7 @@ public class BookDetailActivity extends Activity {
     }
 
     boolean loadConfigFile(){
-        JSONObject obj = ServiceRequest.requestConfigFileAPI(issue.issue_aid);
+        JSONObject obj = ServiceRequest.requestConfigFileAPI(issue.issue_aid, Helper.findDeviceID(this));
         try {
             FileWriter file = new FileWriter(Helper.getConfigPath(issue));
             file.write(obj.toString());
@@ -264,77 +264,6 @@ public class BookDetailActivity extends Activity {
         }
     }
 
-    public void renderThumb(String filePath){
-        try {
-
-            PdfContext pdf_conext = new PdfContext();
-            CodecDocument d = pdf_conext.openDocument(filePath);
-
-            CodecPage vuPage = d.getPage(0); // choose your page number
-            RectF rf = new RectF();
-            rf.bottom = rf.right = (float)1.0;
-            Bitmap bitmap = vuPage.renderBitmap(150, 150, rf);
-            String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
-            String savePath = Helper.getThumbnailDirectory(issue.path) + "/" + lastPath;
-
-            BufferedOutputStream bos = null;
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
-            byte[] imageData = baos.toByteArray();
-
-            savePath = Helper.removeExtention(savePath);
-            String thumbPath = savePath+".jpg";
-
-            FileOutputStream outputStream = null;
-
-            outputStream = new FileOutputStream(new File(thumbPath));
-            bos = new BufferedOutputStream(outputStream);
-            bos.write(imageData, 0, imageData.length);
-            bos.flush();
-            bos.close();
-
-            Thread.sleep(10);
-
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }catch (IOException e){
-            e.printStackTrace();
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
-
-    }
-
-    void renderPDF(String path){
-        InputStream epubInputStream = null;
-        try {
-            epubInputStream = new FileInputStream(new File(path));
-            String lastPath = path.substring(path.lastIndexOf('/') + 1);
-            String folderPath = Helper.getBookDirectory() + "/" + issue.path + "/" + issue.path;
-            if (!Helper.fileExits(folderPath)){
-                Helper.createDirectory(folderPath);
-            }
-            String savePath = folderPath+"/" + lastPath;
-            if (!Helper.fileExits(savePath)) {
-                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
-
-                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
-                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                bos.write(cis, 0, cis.length);
-                bos.flush();
-                bos.close();
-            }
-            //InputStream is = new ByteArrayInputStream(cis);
-            renderThumb(savePath);
-        } catch (Exception e) {
-            e.printStackTrace();
-            //imageView.setImageResource(R.drawable.no_image_detail);
-        }
-    }
-
-
     // usually, subclasses of AsyncTask are declared inside the activity class.
 // that way, you can easily modify the UI thread from here
     private class DownloadTask extends AsyncTask<String, Integer, String> {
@@ -358,11 +287,12 @@ public class BookDetailActivity extends Activity {
             mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                     getClass().getName());
             mWakeLock.acquire();
-            if(Helper.isEPub(issue))
-                mProgressDialog.show();
-            else {
-                onComplete();
-            }
+//            if(Helper.isEPub(issue))
+//                mProgressDialog.show();
+//            else {
+//                onComplete();
+//            }
+            mProgressDialog.show();
             new DatabaseHandler(getApplicationContext()).updateIssueStatus(Constant.DOWNLOADING_STATUS, issue.content_aid);
             Toast.makeText(context,"File start downloaded", Toast.LENGTH_SHORT).show();
         }
@@ -382,6 +312,8 @@ public class BookDetailActivity extends Activity {
             if(Helper.isEPub(issue)) {
                 mProgressDialog.dismiss();
                 onComplete();
+            }else {
+                mProgressDialog.dismiss();
             }
             if (result != null) {
                 new DatabaseHandler(getApplicationContext()).updateIssueStatus(Constant.FAIL_STATUS, issue.content_aid);
@@ -440,6 +372,19 @@ public class BookDetailActivity extends Activity {
 
                     renderPDF(savePath);
 
+                    if (i ==  sUrl.length-1) {
+                        BookDetailActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mProgressDialog.dismiss();
+                                onComplete();
+                            }
+                        });
+                        //onComplete();
+
+                    }
+                    //new ThumbTask().execute(savePath);
+
                     //Helper.createThumbnail(savePath,issue.path);
                 }
 
@@ -494,7 +439,7 @@ public class BookDetailActivity extends Activity {
         stockArr = links.toArray(stockArr);
         downloadTask.execute(stockArr);
 
-        if(Helper.isEPub(issue)){
+        //if(Helper.isEPub(issue)){
 
             mProgressDialog.setMessage("Download "+issue.content_name);
             mProgressDialog.setIndeterminate(true);
@@ -506,7 +451,7 @@ public class BookDetailActivity extends Activity {
                     downloadTask.cancel(true);
                 }
             });
-        }
+        //}
 
     }
 
@@ -596,5 +541,82 @@ public class BookDetailActivity extends Activity {
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    void renderPDF(String path){
+        render(path);
+    }
+
+    public void render(String path){
+        InputStream epubInputStream = null;
+        try {
+            epubInputStream = new FileInputStream(new File(path));
+            String lastPath = path.substring(path.lastIndexOf('/') + 1);
+            String folderPath = Helper.getBookDirectory() + "/" + issue.path + "/" + issue.path;
+            if (!Helper.fileExits(folderPath)){
+                Helper.createDirectory(folderPath);
+            }
+            String savePath = folderPath+"/" + lastPath;
+            if (!Helper.fileExits(savePath)) {
+                byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+
+                FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                bos.write(cis, 0, cis.length);
+                bos.flush();
+                bos.close();
+            }
+            //InputStream is = new ByteArrayInputStream(cis);
+            renderThumb(savePath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            //imageView.setImageResource(R.drawable.no_image_detail);
+        }
+    }
+
+    public void renderThumb(String filePath){
+        try {
+
+
+            PdfContext pdf_conext = new PdfContext();
+            CodecDocument d = pdf_conext.openDocument(filePath);
+
+            CodecPage vuPage = d.getPage(0); // choose your page number
+            RectF rf = new RectF();
+            rf.bottom = rf.right = (float)1.0;
+            double aspectRatio = (double) vuPage.getWidth() / (double) vuPage.getHeight();
+            int w = (int) (150 * aspectRatio);
+            Bitmap bitmap = vuPage.renderBitmap(w, 150, rf);
+            String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
+            String savePath = Helper.getThumbnailDirectory(issue.path) + "/" + lastPath;
+
+            BufferedOutputStream bos = null;
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+            byte[] imageData = baos.toByteArray();
+
+            savePath = Helper.removeExtention(savePath);
+            String thumbPath = savePath+".jpg";
+
+            FileOutputStream outputStream = null;
+
+            outputStream = new FileOutputStream(new File(thumbPath));
+            bos = new BufferedOutputStream(outputStream);
+            bos.write(imageData, 0, imageData.length);
+            bos.flush();
+            bos.close();
+
+            Thread.sleep(5);
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
     }
 }

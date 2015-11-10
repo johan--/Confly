@@ -22,7 +22,6 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.bookdose.confly.EpubReader.EPubReaderActivity;
 import com.bookdose.confly.adapter.CategorylistAdapter;
 import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.FileEncrypt;
@@ -45,11 +44,18 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import epubtest.BookViewActivity;
+import epubtest.CustomFont;
+import epubtest.SkyApplication;
+import epubtest.SkyUtility;
+
 public class ConflyActivity extends FragmentActivity implements DownloadFragment.DownloadFragmentListener, DownloadPagerFragment.DownloadPagerListener, PopoverView.PopoverViewDelegate, CategorylistAdapter.CategoryListListener, ShelfFragment.ShelfListenner {
 
     DownloadPagerFragment downloadFragment;
     ShelfFragment shelfFragment;
     NewsFragment newsFragment;
+    DownloadFragment downloadListFragment;
+
     ImageButton editBtn;
     ImageButton bookBt;
     ImageButton docBt;
@@ -153,7 +159,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             }
         });
 
-        downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active));
+        downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active_mobile));
 
         downloadMenu.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,7 +169,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                     pushLibraryFragment();
                 else
                     pushDownloadFragment();
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active_mobile));
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
             }
@@ -174,7 +180,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                 showShelfMenu();
                 pushMyshelfFragment();
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_active_mobile));
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
             }
         });
@@ -184,7 +190,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                 showNewsMenu();
                 pushNewsFragment();
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
-                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive));
+                downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_active_mobile));
             }
         });
@@ -232,6 +238,18 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         if (result.equals("SUCCESS")){
             pushMyshelfFragment();
             result = "";
+        }
+
+        if (Helper.isTablet(ConflyActivity.this)) {
+            if (category != null)
+                downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+            else
+                downloadFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+        }else {
+            if (category != null)
+                downloadListFragment.loadProductList(category.category_aid, category.product_main_aid);
+            else
+                downloadListFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
         }
     }
 
@@ -322,10 +340,17 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                         "com.bookdose.confly", Context.MODE_PRIVATE);
                 prefs.edit().putString(Constant.LANGUAGE_KEY, languages.get(position)).apply();
 
-                if (category != null)
-                    downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
-                else
-                    downloadFragment.loadProductList(Constant.ALL_ID,Constant.MAGAZINE_ID);
+                if (Helper.isTablet(ConflyActivity.this)) {
+                    if (category != null)
+                        downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+                    else
+                        downloadFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+                }else {
+                    if (category != null)
+                        downloadListFragment.loadProductList(category.category_aid, category.product_main_aid);
+                    else
+                        downloadListFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+                }
             }
 
         });
@@ -343,7 +368,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         ListView listView = (ListView)popoverView.findViewById(R.id.poplist);
 
         ArrayList<Category> categories = new ArrayList<Category>();
-        JSONArray response = ServiceRequest.requestCategoryListAPI(catID);
+        JSONArray response = ServiceRequest.requestCategoryListAPI(catID,Helper.findDeviceID(this));
         Category cat = new Category();
         cat.category_name = Constant.ALL;
         cat.category_aid = Constant.ALL_ID;
@@ -372,10 +397,10 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     void pushDownloadFragment(){
         FragmentManager fragmentManager = getSupportFragmentManager();
-        DownloadFragment downloadFragment = DownloadFragment.newInstance("", "");
-        downloadFragment.setDownloadFragmentListener(this);
+        downloadListFragment = DownloadFragment.newInstance("", "");
+        downloadListFragment.setDownloadFragmentListener(this);
         fragmentManager.beginTransaction()
-                .replace(R.id.contentPanel, downloadFragment)
+                .replace(R.id.contentPanel, downloadListFragment)
                 .commit();
     }
 
@@ -495,6 +520,23 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         }
     }
 
+    public void registerFonts() {
+        this.registerCustomFont("Underwood", "uwch.ttf");
+        this.registerCustomFont("Mayflower", "Mayflower Antique.ttf");
+//        SkyUtility st = new SkyUtility(this);
+//        st.copyFontToDevice(fontFileName);
+//        st.makeSetup();
+    }
+
+    public void registerCustomFont(String fontFaceName,String fontFileName) {
+        SkyUtility st = new SkyUtility(this);
+        st.copyFontToDevice(fontFileName);
+        st.makeSetup();
+
+        SkyApplication app = new SkyApplication();
+        app.customFonts.add(new CustomFont(fontFaceName, fontFileName));
+    }
+
     @Override
     public void onSelectIssue(Issue issue) {
         showBookDetail(issue);
@@ -533,7 +575,10 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             activityText.setText(Constant.BOOK+" : "+category.category_name);
         else if (category.product_main_aid.equals(Constant.DOCCUMENT_ID))
             activityText.setText(Constant.DOCCUMENT+" : "+category.category_name);
-        downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+        if(Helper.isTablet(this))
+            downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+        else
+            downloadListFragment.loadProductList(category.category_aid, category.product_main_aid);
         this.category = category;
     }
 
@@ -575,6 +620,8 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         if (Helper.isEPub(issue)){
             try {
 
+                registerFonts();
+
                 InputStream epubInputStream = new FileInputStream(Helper.getFileEPubPath(issue));
 
                 String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+issue.path+".epub";
@@ -583,16 +630,44 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
                 FileOutputStream outputStream = new FileOutputStream(new File(savePath));
                 BufferedOutputStream bos = new BufferedOutputStream(outputStream);
-                bos.write(cis,0,cis.length);
+                bos.write(cis, 0, cis.length);
                 bos.flush();
                 bos.close();
 
 
-                Intent i = new Intent(this, EPubReaderActivity.class);
-                i.putExtra("path", savePath);
-                i.putExtra("name", issue.content_name);
+//                Intent i = new Intent(this, EPubReaderActivity.class);
+//                i.putExtra("path", savePath);
+//                i.putExtra("name", issue.content_name);
+//
+//                startActivity(i);
 
-                startActivity(i);
+                Intent intent = new Intent(this, BookViewActivity.class);
+//                if (!bi.isFixedLayout) {
+//                    intent = new Intent(this,BookViewActivity.class);
+//                }else {
+//                    intent = new Intent(this,MagazineActivity.class);
+//                }
+//                intent.putExtra("BOOKCODE",issue.);
+                intent.putExtra("TITLE",issue.content_name);
+                intent.putExtra("AUTHOR", issue.author);
+                intent.putExtra("BOOKNAME",issue.path);
+                intent.putExtra("FILEPATH",savePath);
+//                if (bi.isRTL && !bi.isRead) {
+//                    intent.putExtra("POSITION",(double)1);
+//                }else {
+//                    intent.putExtra("POSITION",bi.position);
+//                }
+//                intent.putExtra("THEMEINDEX",app.setting.theme);
+//                intent.putExtra("DOUBLEPAGED",app.setting.doublePaged);
+//                intent.putExtra("transitionType",app.setting.transitionType);
+//                intent.putExtra("GLOBALPAGINATION",app.setting.globalPagination);
+//                intent.putExtra("RTL",bi.isRTL);
+//                intent.putExtra("VERTICALWRITING",bi.isVerticalWriting);
+//
+//                intent.putExtra("SPREAD", bi.spread);
+//                intent.putExtra("ORIENTATION", bi.orientation);
+
+                startActivity(intent);
 
             } catch (IOException e) {
 

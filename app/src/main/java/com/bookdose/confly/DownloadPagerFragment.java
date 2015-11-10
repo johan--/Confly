@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.bookdose.confly.adapter.FragmentPageAdapter;
+import com.bookdose.confly.helper.Helper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
@@ -148,7 +149,8 @@ public class DownloadPagerFragment extends Fragment implements View.OnClickListe
         SharedPreferences prefs = getActivity().getSharedPreferences(
                 "com.bookdose.confly", Context.MODE_PRIVATE);
         String lang = prefs.getString(Constant.LANGUAGE_KEY, "All");
-        JSONArray datas = ServiceRequest.requestProductListAPI(catId,productMainId,lang);
+        String token = prefs.getString(Constant.TOKEN_KEY,null);
+        JSONArray datas = ServiceRequest.requestProductListAPI(catId,productMainId,lang, Helper.findDeviceID(getActivity()),token);
         if (datas != null){
             for (int i=0; i<datas.length(); i++){
                 try {
