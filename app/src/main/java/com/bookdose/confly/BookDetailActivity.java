@@ -1,6 +1,7 @@
 package com.bookdose.confly;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +25,6 @@ import android.widget.Toast;
 import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
-import com.bookdose.confly.helper.JsonHelper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Constant;
 import com.bookdose.confly.object.Issue;
@@ -36,8 +36,6 @@ import com.facebook.share.Sharer;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.vudroid.core.codec.CodecDocument;
 import org.vudroid.core.codec.CodecPage;
@@ -120,6 +118,22 @@ public class BookDetailActivity extends Activity {
                         Bitmap bm=coverView.getDrawingCache();
                         Helper.saveCoverImage(bm, issue.cover_image);
                         //downloadIssue();
+                        new AlertDialog.Builder(BookDetailActivity.this)
+                                .setTitle("Delete entry")
+                                .setMessage("Are you sure you want to delete this entry?")
+                                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // continue with delete
+                                        onComplete();
+                                    }
+                                })
+//                                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+//                                    public void onClick(DialogInterface dialog, int which) {
+//                                        // do nothing
+//                                    }
+//                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
                     }
                 }
 
@@ -210,20 +224,17 @@ public class BookDetailActivity extends Activity {
             file.flush();
             file.close();
 
-            JSONObject detail = obj.getJSONObject("detail");
-            if(detail.getString("content_type").equals("epub")){
-                JSONArray pages = obj.getJSONArray("pages");
-                JSONObject page = pages.getJSONObject(0);
-                downloadePub(page.getString("link"));
-            }else {
-                ArrayList<String> links = JsonHelper.getLinkDownload(issue);
-                downloadIssue(links);
-            }
+//            JSONObject detail = obj.getJSONObject("detail");
+//            if(detail.getString("content_type").equals("epub")){
+//                JSONArray pages = obj.getJSONArray("pages");
+//                JSONObject page = pages.getJSONObject(0);
+//                downloadePub(page.getString("link"));
+//            }else {
+//                ArrayList<String> links = JsonHelper.getLinkDownload(issue);
+//                downloadIssue(links);
+//            }
             return true;
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return false;
-        }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return false;
         }

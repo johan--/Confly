@@ -49,4 +49,4 @@
         android:layout_alignParentRight="true"
         android:src="@drawable/img_devider_verticle" />
 
-</RelativeLayout><!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/res/layout/griditem.xml -->
+</RelativeLayout><!-- From: file:/Users/glive/StudioProjects/Confly/gridViewPager/src/main/res/layout/griditem.xml -->

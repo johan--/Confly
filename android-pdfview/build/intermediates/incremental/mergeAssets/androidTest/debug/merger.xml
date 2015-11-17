@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merger version="3"><dataSet config="debug"><source path="/Users/Teebio/AndroidStudioProjects/Confly/android-pdfview/build/intermediates/bundles/debug/assets"/></dataSet><dataSet config="main"><source path="/Users/Teebio/AndroidStudioProjects/Confly/android-pdfview/src/androidTest/assets"/></dataSet></merger>
+<merger version="3"><dataSet config="debug"><source path="/Users/glive/StudioProjects/Confly/android-pdfview/build/intermediates/bundles/debug/assets"/></dataSet><dataSet config="main"><source path="/Users/glive/StudioProjects/Confly/android-pdfview/src/androidTest/assets"/></dataSet></merger>

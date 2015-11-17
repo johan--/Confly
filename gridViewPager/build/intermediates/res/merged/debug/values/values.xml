@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/res/values/strings.xml -->
+    <!-- From: file:/Users/glive/StudioProjects/Confly/gridViewPager/src/main/res/values/strings.xml -->
     <eat-comment/>
     <integer name="num_cols">5</integer>
     <integer name="num_rows">3</integer>
     <string name="app_name">GridViewDemo</string>
-    <!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/res/values/styles.xml -->
+    <!-- From: file:/Users/glive/StudioProjects/Confly/gridViewPager/src/main/res/values/styles.xml -->
     <eat-comment/>
     <style name="AppBaseTheme" parent="android:Theme.Light">
         <!--

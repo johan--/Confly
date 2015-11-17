@@ -39,6 +39,7 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
 
     public interface ShelfListenner{
         void openIssue(Issue issue);
+        void downloadIssue(Issue issue);
     }
 
     private ShelfListenner shelfListenner;
@@ -130,7 +131,12 @@ public class ShelfFragment extends Fragment implements View.OnClickListener, Fra
 
     @Override
     public void didSelectedBook(Issue issue) {
-        if (shelfListenner != null)
-            shelfListenner.openIssue(issue);
+        if (issue.status.equals(Constant.COMPLETE_STATUS)) {
+            if (shelfListenner != null)
+                shelfListenner.openIssue(issue);
+        }else {
+            if (shelfListenner != null)
+                shelfListenner.downloadIssue(issue);
+        }
     }
 }

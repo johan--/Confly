@@ -12,6 +12,20 @@ import java.util.ArrayList;
  * Created by Teebio on 9/30/15 AD.
  */
 public class JsonHelper {
+
+    public static JSONObject getJsonConfig(Issue issue){
+        JSONObject obj = null;
+        try {
+            obj = new JSONObject(Helper.readFile(Helper.getConfigPath(issue)));
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return obj;
+
+    }
+
     public static ArrayList<String> getLinkDownload(Issue issue){
         ArrayList<String>links = new ArrayList<>();
         try {

@@ -7,8 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.Log;
@@ -21,11 +25,13 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bookdose.confly.adapter.CategorylistAdapter;
 import com.bookdose.confly.helper.DatabaseHandler;
 import com.bookdose.confly.helper.FileEncrypt;
 import com.bookdose.confly.helper.Helper;
+import com.bookdose.confly.helper.JsonHelper;
 import com.bookdose.confly.helper.ServiceRequest;
 import com.bookdose.confly.object.Category;
 import com.bookdose.confly.object.Constant;
@@ -34,14 +40,22 @@ import com.bookdose.confly.object.Issue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.vudroid.core.codec.CodecDocument;
+import org.vudroid.core.codec.CodecPage;
+import org.vudroid.pdfdroid.codec.PdfContext;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 import epubtest.BookViewActivity;
@@ -70,6 +84,9 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     TextView languageText;
     ProgressDialog progressBar;
 
+    ProgressDialog mProgressDialog;
+
+    boolean isShelf;
     String result = "WAIT";
     Category category;
     String chooseType = Constant.ALL;
@@ -172,6 +189,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                 downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_active_mobile));
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
+                isShelf = false;
             }
         });
         mylibraryMenu.setOnClickListener(new View.OnClickListener() {
@@ -182,6 +200,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_active_mobile));
                 downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_inactive_mobile));
+
             }
         });
         newsMenu.setOnClickListener(new View.OnClickListener() {
@@ -192,6 +211,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
                 mylibraryMenu.setImageDrawable(getResources().getDrawable(R.drawable.shelft_inactive_mobile));
                 downloadMenu.setImageDrawable(getResources().getDrawable(R.drawable.content_inactive_mobile));
                 newsMenu.setImageDrawable(getResources().getDrawable(R.drawable.news_active_mobile));
+                isShelf = false;
             }
         });
 
@@ -238,18 +258,20 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
         if (result.equals("SUCCESS")){
             pushMyshelfFragment();
             result = "";
-        }
-
-        if (Helper.isTablet(ConflyActivity.this)) {
-            if (category != null)
-                downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
-            else
-                downloadFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
         }else {
-            if (category != null)
-                downloadListFragment.loadProductList(category.category_aid, category.product_main_aid);
-            else
-                downloadListFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+            if (!isShelf){
+                if (Helper.isTablet(ConflyActivity.this)) {
+                    if (category != null)
+                        downloadFragment.loadProductList(category.category_aid, category.product_main_aid);
+                    else
+                        downloadFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+                }else {
+                    if (category != null)
+                        downloadListFragment.loadProductList(category.category_aid, category.product_main_aid);
+                    else
+                        downloadListFragment.loadProductList(Constant.ALL_ID, Constant.MAGAZINE_ID);
+                }
+            }
         }
     }
 
@@ -414,6 +436,7 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     }
 
     void pushMyshelfFragment(){
+        isShelf = true;
         FragmentManager fragmentManager = getSupportFragmentManager();
         shelfFragment = new ShelfFragment();
         shelfFragment.setShelfListenner(this);
@@ -590,6 +613,11 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
             openBook(issue);
     }
 
+    @Override
+    public void downloadIssue(Issue issue) {
+        download(issue);
+    }
+
     void editIssue(final Issue issue){
         new AlertDialog.Builder(this)
                 .setTitle("Delete entry")
@@ -617,6 +645,8 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     }
 
     void openBook(Issue issue){
+        isShelf = true;
+
         if (Helper.isEPub(issue)){
             try {
 
@@ -667,7 +697,8 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 //                intent.putExtra("SPREAD", bi.spread);
 //                intent.putExtra("ORIENTATION", bi.orientation);
 
-                startActivity(intent);
+                //startActivity(intent);
+                startActivityForResult(intent, 1);
 
             } catch (IOException e) {
 
@@ -684,6 +715,23 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
 
     }
 
+    void download(Issue issue){
+        JSONObject obj = JsonHelper.getJsonConfig(issue);
+        try {
+            JSONObject detail = obj.getJSONObject("detail");
+            if(detail.getString("content_type").equals("epub")){
+                JSONArray pages = obj.getJSONArray("pages");
+                JSONObject page = pages.getJSONObject(0);
+                downloadePub(page.getString("link"), issue);
+            }else {
+                ArrayList<String> links = JsonHelper.getLinkDownload(issue);
+                downloadIssue(links, issue);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public interface DownloadListener extends Serializable {
         void onDownloadCompleted(Issue issue);
     }
@@ -695,6 +743,279 @@ public class ConflyActivity extends FragmentActivity implements DownloadFragment
     void hideLoading(){
         if (progressBar.isShowing()) {
             progressBar.dismiss();
+        }
+    }
+
+    public void downloadePub(String fileURL, Issue issue){
+        // instantiate it within the onCreate method
+
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setMessage("Download "+issue.content_name);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
+
+// execute this when the downloader must be fired
+        final DownloadTask downloadTask = new DownloadTask(this,fileURL,issue);
+        downloadTask.execute(fileURL);
+
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                downloadTask.cancel(true);
+            }
+        });
+    }
+
+    public void downloadIssue(ArrayList<String> links, Issue issue){
+        // instantiate it within the onCreate method
+
+        mProgressDialog = new ProgressDialog(this);
+
+        // execute this when the downloader must be fired
+        final DownloadTask downloadTask = new DownloadTask(this,null,issue);
+        String[] stockArr = new String[links.size()];
+        stockArr = links.toArray(stockArr);
+        downloadTask.execute(stockArr);
+
+        //if(Helper.isEPub(issue)){
+
+        mProgressDialog.setMessage("Download "+issue.content_name);
+        mProgressDialog.setIndeterminate(true);
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDialog.setCancelable(true);
+        mProgressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                downloadTask.cancel(true);
+            }
+        });
+        //}
+
+    }
+
+    private class DownloadTask extends AsyncTask<String, Integer, String> {
+
+        private Context context;
+        private PowerManager.WakeLock mWakeLock;
+        private Issue issue;
+
+        public DownloadTask(Context context) {
+            this.context = context;
+        }
+        public DownloadTask(Context context, String url){
+            this.context = context;
+        }
+        public DownloadTask(Context context, String url, Issue issue){
+            this.context = context;
+            this.issue = issue;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // take CPU lock to prevent CPU from going off if the user
+            // presses the power button during download
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    getClass().getName());
+            mWakeLock.acquire();
+//            if(Helper.isEPub(issue))
+//                mProgressDialog.show();
+//            else {
+//                onComplete();
+//            }
+            mProgressDialog.show();
+            new DatabaseHandler(getApplicationContext()).updateIssueStatus(Constant.DOWNLOADING_STATUS, issue.content_aid);
+            Toast.makeText(context, "File start downloaded", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... progress) {
+            super.onProgressUpdate(progress);
+            // if we get here, length is known, now set indeterminate to false
+            mProgressDialog.setIndeterminate(false);
+            mProgressDialog.setMax(100);
+            mProgressDialog.setProgress(progress[0]);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mWakeLock.release();
+            if(Helper.isEPub(issue)) {
+                mProgressDialog.dismiss();
+                //onComplete();
+            }else {
+                mProgressDialog.dismiss();
+            }
+            if (result != null) {
+                new DatabaseHandler(getApplicationContext()).updateIssueStatus(Constant.FAIL_STATUS, issue.content_aid);
+                Toast.makeText(context, "Download error: " + result, Toast.LENGTH_LONG).show();
+            }else {
+                new DatabaseHandler(getApplicationContext()).updateIssueStatus(Constant.COMPLETE_STATUS, issue.content_aid);
+                Toast.makeText(context, "File downloaded", Toast.LENGTH_SHORT).show();
+            }
+
+            shelfFragment.reloadData(chooseType);
+        }
+
+        @Override
+        protected String doInBackground(String... sUrl) {
+            InputStream input = null;
+            OutputStream output = null;
+            HttpURLConnection connection = null;
+            try {
+                for (int i = 0; i < sUrl.length; i++) {
+                    URL url = new URL(sUrl[i]);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+
+                    // expect HTTP 200 OK, so we don't mistakenly save error report
+                    // instead of the file
+                    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        return "Server returned HTTP " + connection.getResponseCode()
+                                + " " + connection.getResponseMessage();
+                    }
+
+                    // this will be useful to display download percentage
+                    // might be -1: server did not report the length
+                    int fileLength = connection.getContentLength();
+
+                    String path = sUrl[i];
+                    String lastPath = path.substring(path.lastIndexOf('/') + 1);
+
+                    // download the file
+                    input = connection.getInputStream();
+                    String savePath = Helper.getBookDirectory()+"/"+issue.path+"/"+lastPath;
+                    output = new FileOutputStream(savePath);
+
+                    byte data[] = new byte[4096];
+                    long total = 0;
+                    int count;
+                    while ((count = input.read(data)) != -1) {
+                        // allow canceling with back button
+                        if (isCancelled()) {
+                            input.close();
+                            return null;
+                        }
+                        total += count;
+                        // publishing the progress....
+                        if (fileLength > 0) // only if total length is known
+                            publishProgress((int) (total * 100 / fileLength));
+                        output.write(data, 0, count);
+                    }
+
+                    renderPDF(savePath);
+
+                    if (i ==  sUrl.length-1) {
+                        ConflyActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mProgressDialog.dismiss();
+                                //onComplete();
+                            }
+                        });
+                        //onComplete();
+
+                    }
+                    //new ThumbTask().execute(savePath);
+
+                    //Helper.createThumbnail(savePath,issue.path);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return e.toString();
+            } finally {
+                try {
+                    if (output != null)
+                        output.close();
+                    if (input != null)
+                        input.close();
+                } catch (IOException ignored) {
+                }
+
+                if (connection != null)
+                    connection.disconnect();
+            }
+            return null;
+        }
+
+        void renderPDF(String path){
+            render(path);
+        }
+
+        public void render(String path){
+            InputStream epubInputStream = null;
+            try {
+                epubInputStream = new FileInputStream(new File(path));
+                String lastPath = path.substring(path.lastIndexOf('/') + 1);
+                String folderPath = Helper.getBookDirectory() + "/" + issue.path + "/" + issue.path;
+                if (!Helper.fileExits(folderPath)){
+                    Helper.createDirectory(folderPath);
+                }
+                String savePath = folderPath+"/" + lastPath;
+                if (!Helper.fileExits(savePath)) {
+                    byte[] cis = FileEncrypt.decrypt_data(epubInputStream);
+
+                    FileOutputStream outputStream = new FileOutputStream(new File(savePath));
+                    BufferedOutputStream bos = new BufferedOutputStream(outputStream);
+                    bos.write(cis, 0, cis.length);
+                    bos.flush();
+                    bos.close();
+                }
+                //InputStream is = new ByteArrayInputStream(cis);
+                renderThumb(savePath);
+            } catch (Exception e) {
+                e.printStackTrace();
+                //imageView.setImageResource(R.drawable.no_image_detail);
+            }
+        }
+
+        public void renderThumb(String filePath){
+            try {
+
+
+                PdfContext pdf_conext = new PdfContext();
+                CodecDocument d = pdf_conext.openDocument(filePath);
+
+                CodecPage vuPage = d.getPage(0); // choose your page number
+                RectF rf = new RectF();
+                rf.bottom = rf.right = (float)1.0;
+                double aspectRatio = (double) vuPage.getWidth() / (double) vuPage.getHeight();
+                int w = (int) (150 * aspectRatio);
+                Bitmap bitmap = vuPage.renderBitmap(w, 150, rf);
+                String lastPath = filePath.substring(filePath.lastIndexOf('/') + 1);
+                String savePath = Helper.getThumbnailDirectory(issue.path) + "/" + lastPath;
+
+                BufferedOutputStream bos = null;
+
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+                byte[] imageData = baos.toByteArray();
+
+                savePath = Helper.removeExtention(savePath);
+                String thumbPath = savePath+".jpg";
+
+                FileOutputStream outputStream = null;
+
+                outputStream = new FileOutputStream(new File(thumbPath));
+                bos = new BufferedOutputStream(outputStream);
+                bos.write(imageData, 0, imageData.length);
+                bos.flush();
+                bos.close();
+
+                Thread.sleep(5);
+
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }catch (InterruptedException e){
+                e.printStackTrace();
+            }
+
         }
     }
 }

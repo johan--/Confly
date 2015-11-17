@@ -3,4 +3,4 @@
 
     <item android:drawable="@drawable/bg_cat_selector" android:state_pressed="true"/>
 
-</selector><!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/res/drawable/cat_selector.xml -->
+</selector><!-- From: file:/Users/glive/StudioProjects/Confly/gridViewPager/src/main/res/drawable/cat_selector.xml -->

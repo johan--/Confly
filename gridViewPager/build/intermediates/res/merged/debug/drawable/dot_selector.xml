@@ -4,4 +4,4 @@
     <item android:drawable="@drawable/dot_white" android:state_selected="true"/>
     <item android:drawable="@drawable/dot_black" android:state_selected="false"/>
 
-</selector><!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/gridViewPager/src/main/res/drawable/dot_selector.xml -->
+</selector><!-- From: file:/Users/glive/StudioProjects/Confly/gridViewPager/src/main/res/drawable/dot_selector.xml -->

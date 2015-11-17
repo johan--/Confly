@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- From: file:/Users/Teebio/AndroidStudioProjects/Confly/hlist/build/intermediates/bundles/debug/res/values/values.xml -->
+    <!-- From: file:/Users/glive/StudioProjects/Confly/hlist/build/intermediates/bundles/debug/res/values/values.xml -->
     <eat-comment/>
     <attr format="reference" name="hlv_absHListViewStyle"/>
     <attr format="reference" name="hlv_expandableListViewStyle"/>
